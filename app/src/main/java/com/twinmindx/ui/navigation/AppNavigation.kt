@@ -53,7 +53,8 @@ fun AppNavigation() {
                         popUpTo(Routes.DASHBOARD) { inclusive = false }
                         launchSingleTop = true
                     }
-                }
+                },
+                onNavigateBack = { navController.popBackStack() }
             )
         }
 

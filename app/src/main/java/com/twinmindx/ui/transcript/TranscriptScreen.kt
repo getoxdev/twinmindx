@@ -1,50 +1,34 @@
 package com.twinmindx.ui.transcript
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.twinmindx.data.db.entity.MeetingStatus
 import com.twinmindx.data.db.entity.TranscriptChunkEntity
+import com.twinmindx.ui.theme.CardBlueLight
+import com.twinmindx.ui.theme.PrimaryBlue
+import com.twinmindx.ui.theme.StatusRecording
+import com.twinmindx.ui.theme.TextSecondary
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TranscriptScreen(
     onBack: () -> Unit,
@@ -59,161 +43,276 @@ fun TranscriptScreen(
     val hasError = meeting?.status == MeetingStatus.ERROR
     val canViewSummary = meeting?.status == MeetingStatus.COMPLETED
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(meeting?.title ?: "Transcript") },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                },
-                actions = {
-                    if (canViewSummary) {
-                        TextButton(onClick = onViewSummary) {
-                            Icon(
-                                Icons.Default.AutoAwesome,
-                                contentDescription = null,
-                                modifier = Modifier.size(16.dp)
-                            )
-                            Spacer(Modifier.width(4.dp))
-                            Text("Summary")
-                        }
-                    }
-                }
-            )
-        }
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-        ) {
-            if (isTranscribing) {
-                LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
-                Text(
-                    text = "Transcribing audio…",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                )
-            }
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White)
+            .padding(top = 32.dp)
+    ) {
+        TranscriptTopBar(
+            title = "Transcript",
+            onBack = onBack
+        )
 
-            if (hasError) {
-                ErrorBanner(
+        Spacer(modifier = Modifier.height(8.dp))
+
+        when {
+            isTranscribing -> {
+                LoadingContent(message = "Transcribing audio...")
+            }
+            hasError -> {
+                ErrorContent(
                     isRetrying = uiState.isRetrying,
                     onRetry = { viewModel.retryAllChunks() }
                 )
             }
-
-            if (chunks.isEmpty() && !isTranscribing) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(32.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        if (hasError) {
-                            Icon(
-                                Icons.Default.ErrorOutline,
-                                contentDescription = null,
-                                modifier = Modifier.size(48.dp),
-                                tint = MaterialTheme.colorScheme.error
-                            )
-                            Spacer(Modifier.height(12.dp))
-                            Text(
-                                "Transcription failed",
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.error
-                            )
-                        } else {
-                            CircularProgressIndicator(modifier = Modifier.size(40.dp))
-                            Spacer(Modifier.height(16.dp))
-                            Text(
-                                "Waiting for transcript…",
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
-                }
-            } else {
+            chunks.isEmpty() -> {
+                EmptyTranscriptContent()
+            }
+            else -> {
                 LazyColumn(
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp),
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     items(chunks, key = { it.id }) { chunk ->
-                        TranscriptChunkCard(chunk = chunk)
+                        TranscriptChunkItem(chunk = chunk)
+                    }
+                    item {
+                        Spacer(modifier = Modifier.height(8.dp))
                     }
                 }
+            }
+        }
+
+        if (canViewSummary && chunks.isNotEmpty()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color.White)
+                    .padding(horizontal = 20.dp, vertical = 16.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                GetSummaryButton(onClick = onViewSummary)
             }
         }
     }
 }
 
 @Composable
-private fun ErrorBanner(
-    isRetrying: Boolean,
-    onRetry: () -> Unit
+fun TranscriptTopBar(
+    title: String,
+    onBack: () -> Unit
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        horizontalArrangement = Arrangement.Start,
+        verticalAlignment = Alignment.CenterVertically
     ) {
+        TextButton(
+            onClick = onBack,
+            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
+        ) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                contentDescription = "Back",
+                tint = PrimaryBlue,
+                modifier = Modifier.size(20.dp)
+            )
+            Spacer(modifier = Modifier.width(4.dp))
+            Text(
+                text = "Back",
+                color = PrimaryBlue,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Medium
+            )
+        }
+
+        Spacer(modifier = Modifier.width(16.dp))
+
         Text(
-            text = "Some chunks failed to transcribe.",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.error,
-            modifier = Modifier.weight(1f)
+            text = title,
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
+            color = Color(0xFF1E293B)
         )
-        Spacer(Modifier.width(8.dp))
-        Button(
-            onClick = onRetry,
-            enabled = !isRetrying,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.errorContainer,
-                contentColor = MaterialTheme.colorScheme.onErrorContainer
+    }
+}
+
+@Composable
+fun TranscriptChunkItem(
+    chunk: TranscriptChunkEntity
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        // Timestamp
+        Text(
+            text = formatTimestamp(chunk.createdAtMs),
+            style = MaterialTheme.typography.bodySmall,
+            color = TextSecondary,
+            fontWeight = FontWeight.Medium
+        )
+
+        Spacer(modifier = Modifier.height(4.dp))
+
+        // Transcript text card
+        OutlinedCard(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(12.dp),
+            border = CardDefaults.outlinedCardBorder().copy(
+                width = 1.dp
+            ),
+            colors = CardDefaults.outlinedCardColors(
+                containerColor = CardBlueLight.copy(alpha = 0.3f)
             )
         ) {
-            if (isRetrying) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(16.dp),
-                    strokeWidth = 2.dp
+            Text(
+                text = chunk.text,
+                style = MaterialTheme.typography.bodyLarge,
+                color = Color(0xFF1E293B),
+                modifier = Modifier.padding(16.dp)
+            )
+        }
+    }
+}
+
+@Composable
+fun LoadingContent(message: String) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(32.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            CircularProgressIndicator(
+                color = PrimaryBlue,
+                modifier = Modifier.size(40.dp)
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = message,
+                style = MaterialTheme.typography.bodyLarge,
+                color = TextSecondary
+            )
+        }
+    }
+}
+
+@Composable
+fun ErrorContent(
+    isRetrying: Boolean,
+    onRetry: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(32.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Icon(
+                imageVector = Icons.Default.ErrorOutline,
+                contentDescription = null,
+                modifier = Modifier.size(48.dp),
+                tint = StatusRecording
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = "Some chunks failed to transcribe.",
+                style = MaterialTheme.typography.bodyLarge,
+                color = StatusRecording
+            )
+            Spacer(modifier = Modifier.height(24.dp))
+            Button(
+                onClick = onRetry,
+                enabled = !isRetrying,
+                shape = RoundedCornerShape(24.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = StatusRecording.copy(alpha = 0.1f),
+                    contentColor = StatusRecording
                 )
-            } else {
-                Icon(Icons.Default.Refresh, contentDescription = null, modifier = Modifier.size(16.dp))
-                Spacer(Modifier.width(4.dp))
-                Text("Retry All", style = MaterialTheme.typography.labelMedium)
+            ) {
+                if (isRetrying) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(16.dp),
+                        strokeWidth = 2.dp,
+                        color = StatusRecording
+                    )
+                } else {
+                    Icon(
+                        Icons.Default.Refresh,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Retry All", style = MaterialTheme.typography.labelMedium)
+                }
             }
         }
     }
 }
 
 @Composable
-private fun TranscriptChunkCard(chunk: TranscriptChunkEntity) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
-        )
+fun EmptyTranscriptContent() {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(32.dp),
+        contentAlignment = Alignment.Center
     ) {
-        Column(modifier = Modifier.padding(12.dp)) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
             Text(
-                text = "Segment ${chunk.chunkIndex + 1}",
-                style = MaterialTheme.typography.labelSmall,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Spacer(Modifier.height(4.dp))
-            Text(
-                text = chunk.text,
-                style = MaterialTheme.typography.bodyMedium
+                text = "Waiting for transcript...",
+                style = MaterialTheme.typography.bodyLarge,
+                color = TextSecondary
             )
         }
     }
+}
+
+@Composable
+fun GetSummaryButton(
+    onClick: () -> Unit
+) {
+    Button(
+        onClick = onClick,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(56.dp),
+        shape = RoundedCornerShape(28.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = PrimaryBlue,
+            contentColor = Color.White
+        )
+    ) {
+        Icon(
+            imageVector = Icons.Default.AutoAwesome,
+            contentDescription = null,
+            tint = Color.White,
+            modifier = Modifier.size(20.dp)
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(
+            text = "Get Summary",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold
+        )
+    }
+}
+
+private fun formatTimestamp(timeMs: Long): String {
+    val formatter = SimpleDateFormat("hh:mm a", Locale.getDefault())
+    return formatter.format(Date(timeMs)).lowercase()
 }

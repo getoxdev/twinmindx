@@ -513,40 +513,58 @@ class RecordingService : Service() {
 
     private val audioDeviceCallback = object : AudioDeviceCallback() {
         override fun onAudioDevicesAdded(addedDevices: Array<out AudioDeviceInfo>) {
-            val hasHeadset = addedDevices.any { device ->
+            val hasWiredHeadset = addedDevices.any { device ->
                 device.type == AudioDeviceInfo.TYPE_WIRED_HEADSET ||
-                device.type == AudioDeviceInfo.TYPE_WIRED_HEADPHONES ||
+                device.type == AudioDeviceInfo.TYPE_WIRED_HEADPHONES
+            }
+            val hasBluetoothHeadset = addedDevices.any { device ->
                 device.type == AudioDeviceInfo.TYPE_BLUETOOTH_SCO ||
                 device.type == AudioDeviceInfo.TYPE_BLUETOOTH_A2DP
             }
-            if (hasHeadset && _recordingState.value == RecordingState.RECORDING) {
-                _statusMessage.value = "Audio source changed - Headset connected"
-                updateNotification()
-                serviceScope.launch {
-                    delay(2000)
-                    if (_statusMessage.value == "Audio source changed - Headset connected") {
-                        _statusMessage.value = "Recording..."
-                        updateNotification()
+            if (_recordingState.value == RecordingState.RECORDING) {
+                val message = when {
+                    hasWiredHeadset -> "Audio source changed - Wired headset connected"
+                    hasBluetoothHeadset -> "Audio source changed - Bluetooth headset connected"
+                    else -> null
+                }
+                message?.let {
+                    _statusMessage.value = it
+                    updateNotification()
+                    serviceScope.launch {
+                        delay(2000)
+                        if (_statusMessage.value == it) {
+                            _statusMessage.value = "Recording..."
+                            updateNotification()
+                        }
                     }
                 }
             }
         }
 
         override fun onAudioDevicesRemoved(removedDevices: Array<out AudioDeviceInfo>) {
-            val hadHeadset = removedDevices.any { device ->
+            val hadWiredHeadset = removedDevices.any { device ->
                 device.type == AudioDeviceInfo.TYPE_WIRED_HEADSET ||
-                device.type == AudioDeviceInfo.TYPE_WIRED_HEADPHONES ||
+                device.type == AudioDeviceInfo.TYPE_WIRED_HEADPHONES
+            }
+            val hadBluetoothHeadset = removedDevices.any { device ->
                 device.type == AudioDeviceInfo.TYPE_BLUETOOTH_SCO ||
                 device.type == AudioDeviceInfo.TYPE_BLUETOOTH_A2DP
             }
-            if (hadHeadset && _recordingState.value == RecordingState.RECORDING) {
-                _statusMessage.value = "Audio source changed - Headset disconnected"
-                updateNotification()
-                serviceScope.launch {
-                    delay(2000)
-                    if (_statusMessage.value == "Audio source changed - Headset disconnected") {
-                        _statusMessage.value = "Recording..."
-                        updateNotification()
+            if (_recordingState.value == RecordingState.RECORDING) {
+                val message = when {
+                    hadWiredHeadset -> "Audio source changed - Wired headset disconnected"
+                    hadBluetoothHeadset -> "Audio source changed - Bluetooth headset disconnected"
+                    else -> null
+                }
+                message?.let {
+                    _statusMessage.value = it
+                    updateNotification()
+                    serviceScope.launch {
+                        delay(2000)
+                        if (_statusMessage.value == it) {
+                            _statusMessage.value = "Recording..."
+                            updateNotification()
+                        }
                     }
                 }
             }
@@ -644,7 +662,7 @@ class RecordingService : Service() {
         val isPaused = _recordingState.value == RecordingState.PAUSED
 
         val builder = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("TwinMind Recording")
+            .setContentTitle("TwinMindX Recording")
             .setContentText(statusText)
             .setSmallIcon(android.R.drawable.ic_btn_speak_now)
             .setContentIntent(contentIntent)

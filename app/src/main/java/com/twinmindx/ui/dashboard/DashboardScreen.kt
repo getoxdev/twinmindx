@@ -5,8 +5,8 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -17,41 +17,48 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Mic
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SuggestionChip
-import androidx.compose.material3.SuggestionChipDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
-import kotlin.collections.mutableListOf
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.twinmindx.R
 import com.twinmindx.data.db.entity.MeetingStatus
 import com.twinmindx.domain.model.Meeting
+import com.twinmindx.ui.theme.AccentOrange
+import com.twinmindx.ui.theme.CardBlueLight
+import com.twinmindx.ui.theme.PrimaryBlue
+import com.twinmindx.ui.theme.StatusRecording
+import com.twinmindx.ui.theme.TextOnPrimary
+import com.twinmindx.ui.theme.TextSecondary
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(
     onNavigateToRecording: (String) -> Unit,
@@ -101,121 +108,210 @@ fun DashboardScreen(
         }
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(title = { Text("TwinMindX") })
-        },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = { checkAndRequestPermissions() },
-                shape = CircleShape
-            ) {
-                Icon(Icons.Default.Add, contentDescription = "New recording")
-            }
-        }
-    ) { padding ->
-        if (meetings.isEmpty()) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(
-                        Icons.Default.Mic,
-                        contentDescription = null,
-                        modifier = Modifier.size(64.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
-                    )
-                    Spacer(Modifier.height(16.dp))
-                    Text(
-                        "No meetings yet",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Text(
-                        "Tap + to start recording",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                    )
-                }
-            }
-        } else {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize().padding(padding),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                items(meetings) { meeting ->
-                    MeetingCard(
-                        meeting = meeting,
-                        onClick = {
-                            when (meeting.status) {
-                                MeetingStatus.RECORDING, MeetingStatus.PAUSED ->
-                                    onNavigateToRecording(meeting.id)
-                                else ->
-                                    onNavigateToTranscript(meeting.id)
-                            }
-                        }
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun MeetingCard(
-    meeting: Meeting,
-    onClick: () -> Unit
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .padding(top = 32.dp)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    meeting.title,
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.weight(1f)
-                )
-                StatusChip(meeting.status)
+        LazyColumn(
+            modifier = Modifier.weight(1f),
+            contentPadding = PaddingValues(bottom = 16.dp)
+        ) {
+            item {
+                GreetingSection()
             }
-            Spacer(Modifier.height(8.dp))
-            Text(
-                formatDate(meeting.startTimeMs),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+            
+            item {
+                Illustration()
+            }
+
+            item {
+                Text(
+                    text = "Your Notes",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
+                    color = PrimaryBlue
+                )
+            }
+            itemsIndexed(meetings) { index, meeting ->
+                MeetingCard(
+                    index = index,
+                    meeting = meeting,
+                    onClick = {
+                        when (meeting.status) {
+                            MeetingStatus.RECORDING, MeetingStatus.PAUSED ->
+                                onNavigateToRecording(meeting.id)
+                            else ->
+                                onNavigateToTranscript(meeting.id)
+                        }
+                    }
+                )
+            }
+        }
+        
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.background)
+                .padding(horizontal = 20.dp, vertical = 16.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            CaptureNotesButton(
+                onClick = { checkAndRequestPermissions() }
             )
         }
     }
 }
 
 @Composable
-fun StatusChip(status: MeetingStatus) {
-    val (label, containerColor) = when (status) {
-        MeetingStatus.RECORDING -> "Recording" to MaterialTheme.colorScheme.errorContainer
-        MeetingStatus.PAUSED -> "Paused" to MaterialTheme.colorScheme.tertiaryContainer
-        MeetingStatus.TRANSCRIBING -> "Transcribing" to MaterialTheme.colorScheme.secondaryContainer
-        MeetingStatus.SUMMARIZING -> "Summarizing" to MaterialTheme.colorScheme.primaryContainer
-        MeetingStatus.COMPLETED -> "Done" to MaterialTheme.colorScheme.primaryContainer
-        MeetingStatus.ERROR -> "Error" to MaterialTheme.colorScheme.errorContainer
-        MeetingStatus.STOPPED -> "Stopped" to MaterialTheme.colorScheme.surfaceVariant
+fun GreetingSection() {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp, vertical = 16.dp)
+    ) {
+        Text(
+            text = "Hey user! Start using twinmindx",
+            style = MaterialTheme.typography.headlineSmall.copy(
+                fontSize = 24.sp,
+                lineHeight = 32.sp
+            ),
+            fontWeight = FontWeight.Bold,
+            color = PrimaryBlue
+        )
     }
-    SuggestionChip(
-        onClick = {},
-        label = { Text(label, style = MaterialTheme.typography.labelSmall) },
-        colors = SuggestionChipDefaults.suggestionChipColors(containerColor = containerColor)
+}
+
+@Composable
+fun Illustration() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(200.dp)
+            .padding(vertical = 8.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Image(
+            painter = painterResource(id = R.raw.illustration),
+            contentDescription = "illustration",
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.FillWidth
+        )
+    }
+}
+
+@Composable
+fun MeetingCard(
+    index: Int,
+    meeting: Meeting,
+    onClick: () -> Unit
+) {
+    Card(
+        onClick = onClick,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp, vertical = 6.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.Transparent
+        ),
+        border = CardDefaults.outlinedCardBorder().copy(
+            width = 1.dp
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(CardBlueLight),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Mic,
+                    contentDescription = null,
+                    tint = PrimaryBlue,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+            Spacer(modifier = Modifier.width(16.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    "Meeting ${index + 1}",
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color(0xFF1E293B)
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    formatDateTime(meeting.startTimeMs),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = TextSecondary
+                )
+            }
+            StatusIndicator(status = meeting.status)
+        }
+    }
+}
+
+@Composable
+fun StatusIndicator(status: MeetingStatus) {
+    val (color, text) = when (status) {
+        MeetingStatus.RECORDING -> StatusRecording to "● Recording"
+        MeetingStatus.PAUSED -> AccentOrange to "● Paused"
+        MeetingStatus.TRANSCRIBING -> PrimaryBlue to "Processing"
+        MeetingStatus.SUMMARIZING -> PrimaryBlue to "Summarizing"
+        MeetingStatus.COMPLETED -> Color(0xFF10B981) to "Done"
+        MeetingStatus.ERROR -> StatusRecording to "Error"
+        MeetingStatus.STOPPED -> TextSecondary to "Stopped"
+    }
+
+    Text(
+        text = text,
+        style = MaterialTheme.typography.labelSmall,
+        color = color,
+        fontWeight = FontWeight.Medium
     )
 }
 
-private fun formatDate(timeMs: Long): String {
-    val formatter = SimpleDateFormat("MMM dd, yyyy · HH:mm", Locale.getDefault())
-    return formatter.format(Date(timeMs))
+@Composable
+fun CaptureNotesButton(
+    onClick: () -> Unit
+) {
+    Button(
+        onClick = onClick,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(56.dp),
+        shape = RoundedCornerShape(28.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = PrimaryBlue,
+            contentColor = TextOnPrimary
+        )
+    ) {
+        Icon(
+            imageVector = Icons.Default.Mic,
+            contentDescription = null,
+            tint = TextOnPrimary,
+            modifier = Modifier.size(20.dp)
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(
+            text = "Capture Notes",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold
+        )
+    }
+}
+
+private fun formatDateTime(timeMs: Long): String {
+    val dateFormatter = SimpleDateFormat("MMM dd • hh:mm a", Locale.getDefault())
+    return dateFormatter.format(Date(timeMs))
 }

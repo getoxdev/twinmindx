@@ -8,15 +8,18 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.twinmindx.ui.dashboard.DashboardScreen
 import com.twinmindx.ui.recording.RecordingScreen
+import com.twinmindx.ui.summary.SummaryScreen
 import com.twinmindx.ui.transcript.TranscriptScreen
 
 object Routes {
     const val DASHBOARD = "dashboard"
     const val RECORDING = "recording/{meetingId}"
     const val TRANSCRIPT = "transcript/{meetingId}"
+    const val SUMMARY = "summary/{meetingId}"
 
     fun recording(meetingId: String) = "recording/$meetingId"
     fun transcript(meetingId: String) = "transcript/$meetingId"
+    fun summary(meetingId: String) = "summary/$meetingId"
 }
 
 @Composable
@@ -57,8 +60,19 @@ fun AppNavigation() {
         composable(
             route = Routes.TRANSCRIPT,
             arguments = listOf(navArgument("meetingId") { type = NavType.StringType })
-        ) {
+        ) { backStackEntry ->
+            val meetingId = backStackEntry.arguments?.getString("meetingId") ?: return@composable
             TranscriptScreen(
+                onBack = { navController.popBackStack() },
+                onViewSummary = { navController.navigate(Routes.summary(meetingId)) }
+            )
+        }
+
+        composable(
+            route = Routes.SUMMARY,
+            arguments = listOf(navArgument("meetingId") { type = NavType.StringType })
+        ) {
+            SummaryScreen(
                 onBack = { navController.popBackStack() }
             )
         }

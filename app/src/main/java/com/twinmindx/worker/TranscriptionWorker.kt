@@ -14,17 +14,6 @@ import com.twinmindx.data.transcription.TranscriptionService
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 
-/**
- * Background worker that transcribes a single audio chunk.
- *
- * Flow:
- *  1. Look up the AudioChunkEntity by [KEY_CHUNK_ID].
- *  2. Mark it as TRANSCRIBING in the DB.
- *  3. Call [TranscriptionService.transcribe] with the file path.
- *  4. On success: save transcript row + mark chunk DONE.
- *  5. On failure: mark chunk FAILED + mark meeting ERROR.
- *     WorkManager will retry up to [MAX_ATTEMPTS] times (exponential backoff).
- */
 @HiltWorker
 class TranscriptionWorker @AssistedInject constructor(
     @Assisted context: Context,

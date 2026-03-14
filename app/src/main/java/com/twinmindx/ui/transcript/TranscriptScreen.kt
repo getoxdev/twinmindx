@@ -16,6 +16,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
@@ -30,6 +31,7 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -46,6 +48,7 @@ import com.twinmindx.data.db.entity.TranscriptChunkEntity
 @Composable
 fun TranscriptScreen(
     onBack: () -> Unit,
+    onViewSummary: () -> Unit,
     viewModel: TranscriptViewModel = hiltViewModel()
 ) {
     val meeting by viewModel.meeting.collectAsState()
@@ -54,6 +57,7 @@ fun TranscriptScreen(
 
     val isTranscribing = meeting?.status == MeetingStatus.TRANSCRIBING
     val hasError = meeting?.status == MeetingStatus.ERROR
+    val canViewSummary = meeting?.status == MeetingStatus.COMPLETED
 
     Scaffold(
         topBar = {
@@ -62,6 +66,19 @@ fun TranscriptScreen(
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    }
+                },
+                actions = {
+                    if (canViewSummary) {
+                        TextButton(onClick = onViewSummary) {
+                            Icon(
+                                Icons.Default.AutoAwesome,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(Modifier.width(4.dp))
+                            Text("Summary")
+                        }
                     }
                 }
             )
@@ -72,7 +89,6 @@ fun TranscriptScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            // Progress banner while transcription is active
             if (isTranscribing) {
                 LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
                 Text(
@@ -83,7 +99,6 @@ fun TranscriptScreen(
                 )
             }
 
-            // Error banner with retry button
             if (hasError) {
                 ErrorBanner(
                     isRetrying = uiState.isRetrying,
@@ -91,9 +106,7 @@ fun TranscriptScreen(
                 )
             }
 
-            // Transcript content
             if (chunks.isEmpty() && !isTranscribing) {
-                // Empty state
                 Box(
                     modifier = Modifier
                         .fillMaxSize()

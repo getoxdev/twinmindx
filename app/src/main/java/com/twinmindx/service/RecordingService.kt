@@ -352,11 +352,10 @@ class RecordingService : Service() {
     suspend fun stopRecording() {
         _recordingState.value = RecordingState.STOPPED
         _statusMessage.value = "Stopped"
-        recordingJob?.cancel()
         timerJob?.cancel()
         silenceJob?.cancel()
-
         safeStopAndReleaseAudioRecord()
+        recordingJob?.join()
 
         abandonAudioFocus()
 
@@ -367,12 +366,10 @@ class RecordingService : Service() {
         }
 
         if (Build.VERSION.SDK_INT >= 36) {
-            // Android 16+ - use DETACH for smoother transitions
             stopForeground(STOP_FOREGROUND_DETACH)
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             stopForeground(STOP_FOREGROUND_REMOVE)
         } else {
-            @Suppress("DEPRECATION")
             stopForeground(true)
         }
         stopSelf()

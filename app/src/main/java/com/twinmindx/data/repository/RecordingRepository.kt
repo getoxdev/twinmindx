@@ -20,7 +20,8 @@ import javax.inject.Singleton
 @Singleton
 class RecordingRepository @Inject constructor(
     private val meetingDao: MeetingDao,
-    private val audioChunkDao: AudioChunkDao
+    private val audioChunkDao: AudioChunkDao,
+    private val transcriptionRepository: TranscriptionRepository
 ) {
 
     fun getAllMeetings(): Flow<List<Meeting>> =
@@ -55,6 +56,11 @@ class RecordingRepository @Inject constructor(
             status = MeetingStatus.TRANSCRIBING,
             totalChunks = totalChunks
         )
+
+        val pendingCount = audioChunkDao.getPendingChunkCount(meetingId)
+        if (pendingCount == 0) {
+            meetingDao.updateStatus(meetingId, MeetingStatus.COMPLETED)
+        }
     }
 
     suspend fun saveAudioChunk(
@@ -71,6 +77,9 @@ class RecordingRepository @Inject constructor(
             durationMs = durationMs
         )
         audioChunkDao.insert(entity)
+
+        transcriptionRepository.enqueueChunkTranscription(entity)
+
         return entity
     }
 

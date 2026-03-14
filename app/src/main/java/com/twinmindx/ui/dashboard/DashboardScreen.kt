@@ -55,6 +55,7 @@ import java.util.Locale
 @Composable
 fun DashboardScreen(
     onNavigateToRecording: (String) -> Unit,
+    onNavigateToTranscript: (String) -> Unit,
     viewModel: DashboardViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
@@ -153,9 +154,8 @@ fun DashboardScreen(
                             when (meeting.status) {
                                 MeetingStatus.RECORDING, MeetingStatus.PAUSED ->
                                     onNavigateToRecording(meeting.id)
-                                else -> {
-                                    
-                                }
+                                else ->
+                                    onNavigateToTranscript(meeting.id)
                             }
                         }
                     )

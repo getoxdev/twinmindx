@@ -32,4 +32,7 @@ interface AudioChunkDao {
 
     @Query("SELECT COUNT(*) FROM audio_chunks WHERE meetingId = :meetingId AND status != 'DONE'")
     suspend fun getPendingChunkCount(meetingId: String): Int
+
+    @Query("SELECT * FROM audio_chunks WHERE id = :id LIMIT 1")
+    suspend fun getChunkById(id: String): AudioChunkEntity?
 }

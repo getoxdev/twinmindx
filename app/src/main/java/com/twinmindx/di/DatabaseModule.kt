@@ -5,6 +5,7 @@ import androidx.room.Room
 import com.twinmindx.data.db.AppDatabase
 import com.twinmindx.data.db.dao.AudioChunkDao
 import com.twinmindx.data.db.dao.MeetingDao
+import com.twinmindx.data.db.dao.TranscriptChunkDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -23,7 +24,9 @@ object DatabaseModule {
             context,
             AppDatabase::class.java,
             "twinmindx_db"
-        ).build()
+        )
+            .addMigrations(AppDatabase.MIGRATION_1_2)
+            .build()
     }
 
     @Provides
@@ -31,4 +34,7 @@ object DatabaseModule {
 
     @Provides
     fun provideAudioChunkDao(db: AppDatabase): AudioChunkDao = db.audioChunkDao()
+
+    @Provides
+    fun provideTranscriptChunkDao(db: AppDatabase): TranscriptChunkDao = db.transcriptChunkDao()
 }

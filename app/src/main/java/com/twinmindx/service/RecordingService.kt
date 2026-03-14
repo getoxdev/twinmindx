@@ -1,4 +1,3 @@
-@file:Suppress("DEPRECATION", "OVERRIDE_DEPRECATION")
 package com.twinmindx.service
 
 import android.app.Notification
@@ -28,7 +27,6 @@ import android.telephony.TelephonyManager
 import androidx.core.app.NotificationCompat
 import com.twinmindx.MainActivity
 import com.twinmindx.data.repository.RecordingRepository
-import com.twinmindx.data.repository.TranscriptionRepository
 import com.twinmindx.data.db.entity.ChunkStatus
 import com.twinmindx.util.AudioUtils
 import com.twinmindx.util.StorageUtils
@@ -53,9 +51,6 @@ class RecordingService : Service() {
 
     @Inject
     lateinit var recordingRepository: RecordingRepository
-
-    @Inject
-    lateinit var transcriptionRepository: TranscriptionRepository
 
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
@@ -100,6 +95,7 @@ class RecordingService : Service() {
     companion object {
         private const val TAG = "RecordingService"
         const val ACTION_STOP_RECORDING = "com.twinmindx.STOP_RECORDING"
+        const val ACTION_PAUSE_RECORDING = "com.twinmindx.PAUSE_RECORDING"
         const val ACTION_RESUME_RECORDING = "com.twinmindx.RESUME_RECORDING"
         const val EXTRA_MEETING_ID = "meeting_id"
         const val NOTIFICATION_ID = 1001
@@ -121,25 +117,6 @@ class RecordingService : Service() {
         registerPhoneStateListener()
         registerAudioDeviceCallback()
         registerHeadsetReceiver()
-        recoverActiveSessions()
-    }
-
-    private fun recoverActiveSessions() {
-        serviceScope.launch {
-            val activeMeetings = recordingRepository.getActiveMeetings()
-            activeMeetings.forEach { meeting ->
-                recordingRepository.finalizeMeeting(meeting.id, meeting.totalChunks)
-                val chunks = recordingRepository.getChunksForMeeting(meeting.id)
-                chunks.filter { it.status == ChunkStatus.PENDING || it.status == ChunkStatus.TRANSCRIBING }.forEach { chunk ->
-                    transcriptionRepository.enqueueTranscription(
-                        meetingId = meeting.id,
-                        chunkId = chunk.id,
-                        chunkIndex = chunk.chunkIndex,
-                        filePath = chunk.filePath
-                    )
-                }
-            }
-        }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -147,9 +124,14 @@ class RecordingService : Service() {
             ACTION_STOP_RECORDING -> {
                 serviceScope.launch { stopRecording() }
             }
+            ACTION_PAUSE_RECORDING -> {
+                if (_recordingState.value == RecordingState.RECORDING) {
+                    userPauseRecording()
+                }
+            }
             ACTION_RESUME_RECORDING -> {
-                if (isPausedForFocus) {
-                    resumeRecording()
+                if (_recordingState.value == RecordingState.PAUSED) {
+                    userResumeRecording()
                 }
             }
             else -> {
@@ -292,12 +274,6 @@ class RecordingService : Service() {
                             filePath = file.absolutePath,
                             durationMs = CHUNK_DURATION_MS
                         )
-                        transcriptionRepository.enqueueTranscription(
-                            meetingId = meetingId,
-                            chunkId = savedChunk.id,
-                            chunkIndex = currentChunkIndex,
-                            filePath = file.absolutePath
-                        )
                         savedChunkCount++
                     }
                 }
@@ -311,12 +287,6 @@ class RecordingService : Service() {
                     chunkIndex = currentChunkIndex,
                     filePath = file.absolutePath,
                     durationMs = CHUNK_DURATION_MS
-                )
-                transcriptionRepository.enqueueTranscription(
-                    meetingId = meetingId,
-                    chunkId = savedChunk.id,
-                    chunkIndex = currentChunkIndex,
-                    filePath = file.absolutePath
                 )
 
                 savedChunkCount++
@@ -403,6 +373,23 @@ class RecordingService : Service() {
         _recordingState.value = RecordingState.PAUSED
         _statusMessage.value = reason
         updateNotification()
+    }
+
+    fun userPauseRecording() {
+        if (_recordingState.value == RecordingState.RECORDING) {
+            _recordingState.value = RecordingState.PAUSED
+            _statusMessage.value = "Paused"
+            updateNotification()
+        }
+    }
+
+    fun userResumeRecording() {
+        if (_recordingState.value == RecordingState.PAUSED && !isPausedForCall && !isPausedForFocus) {
+            _recordingState.value = RecordingState.RECORDING
+            _statusMessage.value = "Recording..."
+            lastAudioDetectedMs = System.currentTimeMillis()
+            updateNotification()
+        }
     }
 
     private fun resumeRecording() {
@@ -623,6 +610,13 @@ class RecordingService : Service() {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
+        val pauseIntent = PendingIntent.getService(
+            this,
+            2,
+            Intent(this, RecordingService::class.java).apply { action = ACTION_PAUSE_RECORDING },
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
         val resumeIntent = PendingIntent.getService(
             this,
             1,
@@ -651,10 +645,12 @@ class RecordingService : Service() {
             .setOngoing(true)
             .setSilent(true)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-            .addAction(android.R.drawable.ic_media_pause, "Stop", stopIntent)
+            .addAction(android.R.drawable.ic_delete, "Stop", stopIntent)
 
         if (isPaused) {
             builder.addAction(android.R.drawable.ic_media_play, "Resume", resumeIntent)
+        } else if (_recordingState.value == RecordingState.RECORDING) {
+            builder.addAction(android.R.drawable.ic_media_pause, "Pause", pauseIntent)
         }
 
         if (_recordingState.value == RecordingState.RECORDING) {

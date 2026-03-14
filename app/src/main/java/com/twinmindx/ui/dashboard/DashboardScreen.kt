@@ -55,7 +55,6 @@ import java.util.Locale
 @Composable
 fun DashboardScreen(
     onNavigateToRecording: (String) -> Unit,
-    onNavigateToSummary: (String) -> Unit,
     viewModel: DashboardViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
@@ -103,7 +102,7 @@ fun DashboardScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("TwinMind") })
+            TopAppBar(title = { Text("TwinMindX") })
         },
         floatingActionButton = {
             FloatingActionButton(
@@ -154,7 +153,9 @@ fun DashboardScreen(
                             when (meeting.status) {
                                 MeetingStatus.RECORDING, MeetingStatus.PAUSED ->
                                     onNavigateToRecording(meeting.id)
-                                else -> onNavigateToSummary(meeting.id)
+                                else -> {
+                                    
+                                }
                             }
                         }
                     )

@@ -9,6 +9,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -16,6 +17,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledIconButton
@@ -81,9 +84,11 @@ fun RecordingScreen(
 
             Spacer(Modifier.height(48.dp))
 
-            RecordingButton(
-                isRecording = recordingState == RecordingState.RECORDING || recordingState == RecordingState.PAUSED,
-                onClick = { viewModel.stopRecording() }
+            RecordingControls(
+                recordingState = recordingState,
+                onPause = { viewModel.pauseRecording() },
+                onResume = { viewModel.resumeRecording() },
+                onStop = { viewModel.stopRecording() }
             )
         }
     }
@@ -104,7 +109,7 @@ fun TimerDisplay(
 @Composable
 fun StatusIndicator(message: String, state: RecordingState) {
     val color = when {
-        state == RecordingState.PAUSED -> MaterialTheme.colorScheme.error
+        state == RecordingState.PAUSED -> MaterialTheme.colorScheme.tertiary
         message.contains("No audio") -> MaterialTheme.colorScheme.error
         message.contains("Low storage") -> MaterialTheme.colorScheme.error
         else -> MaterialTheme.colorScheme.primary
@@ -114,6 +119,51 @@ fun StatusIndicator(message: String, state: RecordingState) {
         style = MaterialTheme.typography.bodyLarge,
         color = color
     )
+}
+
+@Composable
+fun RecordingControls(
+    recordingState: RecordingState,
+    onPause: () -> Unit,
+    onResume: () -> Unit,
+    onStop: () -> Unit
+) {
+    val isActive = recordingState == RecordingState.RECORDING || recordingState == RecordingState.PAUSED
+    val isPaused = recordingState == RecordingState.PAUSED
+
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(32.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // Pause / Resume button
+        if (isActive) {
+            FilledIconButton(
+                onClick = if (isPaused) onResume else onPause,
+                modifier = Modifier.size(64.dp),
+                colors = IconButtonDefaults.filledIconButtonColors(
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer
+                )
+            ) {
+                Icon(
+                    imageVector = if (isPaused) Icons.Default.PlayArrow else Icons.Default.Pause,
+                    contentDescription = if (isPaused) "Resume recording" else "Pause recording",
+                    tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                    modifier = Modifier.size(32.dp)
+                )
+            }
+        }
+
+        // Stop button with pulse animation
+        RecordingButton(
+            isRecording = recordingState == RecordingState.RECORDING,
+            onClick = onStop
+        )
+
+        // Spacer to balance layout when pause button is visible
+        if (isActive) {
+            Spacer(Modifier.size(64.dp))
+        }
+    }
 }
 
 @Composable
@@ -151,8 +201,7 @@ fun RecordingButton(
             onClick = onClick,
             modifier = Modifier.size(72.dp),
             colors = IconButtonDefaults.filledIconButtonColors(
-                containerColor = if (isRecording) MaterialTheme.colorScheme.error
-                else MaterialTheme.colorScheme.primary
+                containerColor = MaterialTheme.colorScheme.error
             )
         ) {
             Icon(

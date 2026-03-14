@@ -90,6 +90,14 @@ class RecordingViewModel @Inject constructor(
         }
     }
 
+    fun pauseRecording() {
+        recordingService?.userPauseRecording()
+    }
+
+    fun resumeRecording() {
+        recordingService?.userResumeRecording()
+    }
+
     fun formatElapsedTime(seconds: Long): String {
         val hours = seconds / 3600
         val minutes = (seconds % 3600) / 60

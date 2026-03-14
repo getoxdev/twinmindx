@@ -14,8 +14,6 @@ object Routes {
     const val RECORDING = "recording/{meetingId}"
 
     fun recording(meetingId: String) = "recording/$meetingId"
-    fun transcript(meetingId: String) = "transcript/$meetingId"
-    fun summary(meetingId: String) = "summary/$meetingId"
 }
 
 @Composable
@@ -42,7 +40,7 @@ fun AppNavigation() {
             RecordingScreen(
                 meetingId = meetingId,
                 onRecordingStopped = { id ->
-                    navController.navigate(Routes.transcript(id)) {
+                    navController.navigate(Routes.DASHBOARD) {
                         popUpTo(Routes.DASHBOARD) { inclusive = false }
                         launchSingleTop = true
                     }

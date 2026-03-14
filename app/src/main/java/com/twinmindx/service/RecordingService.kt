@@ -56,7 +56,7 @@ class RecordingService : Service() {
 
     private val binder = LocalBinder()
 
-    private var audioRecord: AudioRecord? = null
+    @Volatile private var audioRecord: AudioRecord? = null
     private var recordingJob: Job? = null
     private var timerJob: Job? = null
     private var silenceJob: Job? = null
@@ -164,6 +164,19 @@ class RecordingService : Service() {
         startTimer()
     }
 
+    private fun safeStopAndReleaseAudioRecord() {
+        val ar = audioRecord
+        audioRecord = null
+        if (ar != null) {
+            try { ar.stop() } catch (e: IllegalStateException) {
+                android.util.Log.w(TAG, "AudioRecord stop failed (already stopped?): ${e.message}")
+            }
+            try { ar.release() } catch (e: Exception) {
+                android.util.Log.w(TAG, "AudioRecord release failed: ${e.message}")
+            }
+        }
+    }
+
     private fun startRecordingLoop() {
         recordingJob = serviceScope.launch {
             overlapBuffer = ShortArray(overlapSamples)
@@ -258,9 +271,7 @@ class RecordingService : Service() {
                         }
                     }
 
-                    audioRecord?.stop()
-                    audioRecord?.release()
-                    audioRecord = null
+                    safeStopAndReleaseAudioRecord()
                     silenceJob?.cancel()
 
                     outputStream.flush()
@@ -345,9 +356,7 @@ class RecordingService : Service() {
         timerJob?.cancel()
         silenceJob?.cancel()
 
-        audioRecord?.stop()
-        audioRecord?.release()
-        audioRecord = null
+        safeStopAndReleaseAudioRecord()
 
         abandonAudioFocus()
 

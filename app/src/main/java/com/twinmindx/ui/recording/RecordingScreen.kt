@@ -135,7 +135,6 @@ fun RecordingControls(
         horizontalArrangement = Arrangement.spacedBy(32.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Pause / Resume button
         if (isActive) {
             FilledIconButton(
                 onClick = if (isPaused) onResume else onPause,
@@ -153,13 +152,11 @@ fun RecordingControls(
             }
         }
 
-        // Stop button with pulse animation
         RecordingButton(
             isRecording = recordingState == RecordingState.RECORDING,
             onClick = onStop
         )
 
-        // Spacer to balance layout when pause button is visible
         if (isActive) {
             Spacer(Modifier.size(64.dp))
         }

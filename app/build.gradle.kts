@@ -7,11 +7,11 @@ plugins {
 }
 
 android {
-    namespace = "com.varaha.twinmindx"
+    namespace = "com.twinmindx"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.varaha.twinmindx"
+        applicationId = "com.twinmindx"
         minSdk = 24
         targetSdk = 36
         versionCode = 1

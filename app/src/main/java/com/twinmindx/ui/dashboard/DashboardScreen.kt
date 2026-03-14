@@ -61,7 +61,6 @@ fun DashboardScreen(
     val context = LocalContext.current
     val meetings by viewModel.meetings.collectAsState()
 
-    // Required permissions for the recording service
     val requiredPermissions = remember {
         mutableListOf<String>().apply {
             add(Manifest.permission.RECORD_AUDIO)
@@ -84,8 +83,6 @@ fun DashboardScreen(
         if (allGranted) {
             viewModel.startNewRecording(onNavigateToRecording)
         } else {
-            // Handle denied permissions - still allow recording but with limited features
-            // The service gracefully handles missing READ_PHONE_STATE
             val recordAudioGranted = permissions[Manifest.permission.RECORD_AUDIO] == true
             if (recordAudioGranted) {
                 viewModel.startNewRecording(onNavigateToRecording)
@@ -195,13 +192,6 @@ fun MeetingCard(
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            if (meeting.totalChunks > 0) {
-                Text(
-                    "${meeting.totalChunks} chunks",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
         }
     }
 }

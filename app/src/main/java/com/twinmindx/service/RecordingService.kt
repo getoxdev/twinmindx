@@ -94,7 +94,6 @@ class RecordingService : Service() {
     private val OVERLAP_DURATION_MS = 2_000L
     private val SILENCE_DETECTION_THRESHOLD_MS = 10_000L
 
-    // Overlap buffer to hold last 2 seconds of audio for next chunk
     private var overlapBuffer: ShortArray? = null
     private val overlapSamples = (SAMPLE_RATE * OVERLAP_DURATION_MS / 1000).toInt()
 
@@ -105,7 +104,6 @@ class RecordingService : Service() {
         const val EXTRA_MEETING_ID = "meeting_id"
         const val NOTIFICATION_ID = 1001
         const val CHANNEL_ID = "recording_channel"
-        const val CHANNEL_TIMER_ID = "recording_timer_channel"
     }
 
     inner class LocalBinder : Binder() {
@@ -186,7 +184,6 @@ class RecordingService : Service() {
 
     private fun startRecordingLoop() {
         recordingJob = serviceScope.launch {
-            // Initialize overlap buffer
             overlapBuffer = ShortArray(overlapSamples)
             var overlapBufferIndex: Int
 
@@ -234,17 +231,14 @@ class RecordingService : Service() {
                     val chunkStartMs = System.currentTimeMillis()
                     var totalSamplesWritten = 0
 
-                    // Write overlap from previous chunk (if not the first chunk)
                     if (currentChunkIndex > 0 && overlapBuffer != null) {
                         val overlapBytes = AudioUtils.shortArrayToByteArray(overlapBuffer!!, overlapSamples)
                         outputStream.write(overlapBytes)
                         totalSamplesWritten += overlapSamples
                     }
 
-                    // Reset overlap buffer index for capturing new overlap
                     overlapBufferIndex = 0
 
-                    // Calculate duration for new audio (30s - 2s overlap for subsequent chunks)
                     val effectiveDurationMs = if (currentChunkIndex == 0) {
                         CHUNK_DURATION_MS
                     } else {
@@ -291,7 +285,6 @@ class RecordingService : Service() {
                     outputStream.close()
                     AudioUtils.updateWavHeader(file, totalSamplesWritten)
 
-                    // If stopped but we have recorded data, save this final chunk
                     if (_recordingState.value == RecordingState.STOPPED && totalSamplesWritten > 0) {
                         val savedChunk = recordingRepository.saveAudioChunk(
                             meetingId = meetingId,
@@ -309,10 +302,10 @@ class RecordingService : Service() {
                     }
                 }
 
-                // Check if we already saved the final chunk above
-                if (_recordingState.value == RecordingState.STOPPED) break
+                if (_recordingState.value == RecordingState.STOPPED) {
+                    break
+                }
 
-                // Normal case: save completed chunk
                 val savedChunk = recordingRepository.saveAudioChunk(
                     meetingId = meetingId,
                     chunkIndex = currentChunkIndex,
@@ -330,7 +323,6 @@ class RecordingService : Service() {
                 chunkIndex++
             }
 
-            // Clean up overlap buffer
             overlapBuffer = null
         }
     }
@@ -487,7 +479,6 @@ class RecordingService : Service() {
                 telephonyCallback = callback
                 telephonyManager.registerTelephonyCallback(mainExecutor, callback)
             } catch (e: SecurityException) {
-                // READ_PHONE_STATE permission not granted - phone call detection disabled
                 android.util.Log.w(TAG, "Phone state listener not registered: READ_PHONE_STATE permission denied")
             }
         } else {
@@ -502,7 +493,6 @@ class RecordingService : Service() {
                 @Suppress("DEPRECATION")
                 telephonyManager.listen(listener, PhoneStateListener.LISTEN_CALL_STATE)
             } catch (e: SecurityException) {
-                // READ_PHONE_STATE permission not granted - phone call detection disabled
                 android.util.Log.w(TAG, "Phone state listener not registered: READ_PHONE_STATE permission denied")
             }
         }
@@ -579,10 +569,22 @@ class RecordingService : Service() {
             if (intent?.action == Intent.ACTION_HEADSET_PLUG) {
                 val state = intent.getIntExtra("state", -1)
                 if (_recordingState.value == RecordingState.RECORDING) {
-                    val message = if (state == 1) "Audio source changed - Wired headset connected"
-                    else "Audio source changed - Wired headset disconnected"
+                    val message =
+                        when(state) {
+                            0 -> "Audio source changed - Wired headset disconnected"
+                            1 -> "Audio source changed - Wired headset connected"
+                            else -> "Recording..."
+                        }
                     _statusMessage.value = message
                     updateNotification()
+
+                    serviceScope.launch {
+                        delay(2000)
+                        if (_statusMessage.value == message) {
+                            _statusMessage.value = "Recording..."
+                            updateNotification()
+                        }
+                    }
                 }
             }
         }

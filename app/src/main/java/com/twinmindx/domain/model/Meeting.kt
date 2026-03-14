@@ -9,7 +9,6 @@ data class Meeting(
     val startTimeMs: Long,
     val endTimeMs: Long?,
     val status: MeetingStatus,
-    val totalChunks: Int
 )
 
 fun MeetingEntity.toDomain() = Meeting(
@@ -18,7 +17,6 @@ fun MeetingEntity.toDomain() = Meeting(
     startTimeMs = startTimeMs,
     endTimeMs = endTimeMs,
     status = status,
-    totalChunks = totalChunks
 )
 
 fun Meeting.toEntity() = MeetingEntity(
@@ -27,5 +25,4 @@ fun Meeting.toEntity() = MeetingEntity(
     startTimeMs = startTimeMs,
     endTimeMs = endTimeMs,
     status = status,
-    totalChunks = totalChunks
 )

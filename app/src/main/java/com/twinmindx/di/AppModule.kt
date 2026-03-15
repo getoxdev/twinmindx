@@ -6,6 +6,4 @@ import dagger.hilt.components.SingletonComponent
 
 @Module
 @InstallIn(SingletonComponent::class)
-abstract class AppModule {
-
-}
+abstract class AppModule {}

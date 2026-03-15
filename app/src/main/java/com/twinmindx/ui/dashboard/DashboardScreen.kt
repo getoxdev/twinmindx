@@ -60,7 +60,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.twinmindx.R
-import com.twinmindx.data.local.entity.MeetingStatus
+import com.twinmindx.data.local.MeetingStatus
 import com.twinmindx.domain.models.Meeting
 import com.twinmindx.ui.theme.AccentOrange
 import com.twinmindx.ui.theme.CardBlueLight

@@ -18,7 +18,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.twinmindx.data.local.entity.MeetingStatus
+import com.twinmindx.data.local.MeetingStatus
 import com.twinmindx.domain.models.TranscriptChunk
 import com.twinmindx.ui.theme.CardBlueLight
 import com.twinmindx.ui.theme.PrimaryBlue
@@ -214,13 +214,6 @@ fun ErrorContent(
         Column(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Icon(
-                imageVector = Icons.Default.ErrorOutline,
-                contentDescription = null,
-                modifier = Modifier.size(48.dp),
-                tint = StatusRecording
-            )
-            Spacer(modifier = Modifier.height(16.dp))
             Text(
                 text = "Some chunks failed to transcribe.",
                 style = MaterialTheme.typography.bodyLarge,

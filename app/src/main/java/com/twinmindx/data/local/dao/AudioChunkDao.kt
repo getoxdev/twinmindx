@@ -6,7 +6,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import com.twinmindx.data.local.entity.AudioChunkEntity
-import com.twinmindx.data.local.entity.ChunkStatus
+import com.twinmindx.data.local.ChunkStatus
 import kotlinx.coroutines.flow.Flow
 
 @Dao

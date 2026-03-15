@@ -6,10 +6,10 @@ import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.twinmindx.data.local.dao.SummaryDao
-import com.twinmindx.data.local.entity.SummaryStatus
+import com.twinmindx.data.local.SummaryStatus
 import com.twinmindx.domain.repository.RecordingRepository
 import com.twinmindx.domain.repository.TranscriptionRepository
-import com.twinmindx.data.remote.summary.OpenAiSummaryService
+import com.twinmindx.data.remote.summary.SummaryService
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.withTimeout
@@ -22,7 +22,7 @@ class SummaryWorker @AssistedInject constructor(
     private val summaryDao: SummaryDao,
     private val transcriptionRepository: TranscriptionRepository,
     private val recordingRepository: RecordingRepository,
-    private val openAiSummaryService: OpenAiSummaryService
+    private val summaryService: SummaryService
 ) : CoroutineWorker(context, workerParams) {
 
     companion object {
@@ -68,7 +68,7 @@ class SummaryWorker @AssistedInject constructor(
             var lastEmittedText = ""
 
             withTimeout(SUMMARY_GENERATION_TIMEOUT_MS) {
-                openAiSummaryService.streamSummary(transcript).collect { accumulatedText ->
+                summaryService.streamSummary(transcript).collect { accumulatedText ->
                     lastEmittedText = accumulatedText
                     tokenBuffer++
 
@@ -90,7 +90,7 @@ class SummaryWorker @AssistedInject constructor(
                 )
             }
 
-            val result = openAiSummaryService.parseSummaryResult(lastEmittedText)
+            val result = summaryService.parseSummaryResult(lastEmittedText)
 
             summaryDao.updateCompleted(
                 meetingId = meetingId,
@@ -102,8 +102,7 @@ class SummaryWorker @AssistedInject constructor(
                 updatedAtMs = System.currentTimeMillis()
             )
 
-            // Update meeting title with the generated summary title
-            result.title?.let { title ->
+            result.title.let { title ->
                 recordingRepository.updateMeetingTitle(meetingId, title)
             }
 

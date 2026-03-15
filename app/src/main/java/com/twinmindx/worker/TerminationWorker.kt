@@ -1,11 +1,12 @@
 package com.twinmindx.worker
 
 import android.content.Context
+import android.util.Log
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import com.twinmindx.data.local.entity.ChunkStatus
-import com.twinmindx.data.local.entity.MeetingStatus
+import com.twinmindx.data.local.ChunkStatus
+import com.twinmindx.data.local.MeetingStatus
 import com.twinmindx.data.repository.RecordingRepositoryImpl
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
@@ -26,6 +27,7 @@ class TerminationWorker @AssistedInject constructor(
             recoverActiveSessions()
             Result.success()
         } catch (e: Exception) {
+            Log.e("TerminationWorker", "Termination recovery failed", e)
             if (runAttemptCount < 3) {
                 Result.retry()
             } else {

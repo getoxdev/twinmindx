@@ -2,10 +2,7 @@ package com.twinmindx.data.local.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-
-enum class SummaryStatus {
-    PENDING, GENERATING, COMPLETED, ERROR
-}
+import com.twinmindx.data.local.SummaryStatus
 
 @Entity(tableName = "summaries")
 data class SummaryEntity(

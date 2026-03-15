@@ -6,8 +6,8 @@ import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.twinmindx.data.local.dao.AudioChunkDao
-import com.twinmindx.data.local.entity.ChunkStatus
-import com.twinmindx.data.local.entity.MeetingStatus
+import com.twinmindx.data.local.ChunkStatus
+import com.twinmindx.data.local.MeetingStatus
 import com.twinmindx.domain.repository.RecordingRepository
 import com.twinmindx.domain.repository.TranscriptionRepository
 import com.twinmindx.data.remote.transcription.TranscriptionService

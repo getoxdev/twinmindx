@@ -82,7 +82,7 @@ object AudioUtils {
     fun updateWavHeader(file: File, totalSamples: Int = -1) {
         val fileSize = file.length().toInt()
         val dataSize = if (totalSamples > 0) {
-            totalSamples * 2 // 16-bit = 2 bytes per sample
+            totalSamples * 2
         } else {
             fileSize - 44
         }

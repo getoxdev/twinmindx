@@ -8,7 +8,7 @@ import androidx.work.WorkManager
 import com.twinmindx.data.local.dao.AudioChunkDao
 import com.twinmindx.data.local.dao.TranscriptChunkDao
 import com.twinmindx.data.local.entity.AudioChunkEntity
-import com.twinmindx.data.local.entity.ChunkStatus
+import com.twinmindx.data.local.ChunkStatus
 import com.twinmindx.data.local.entity.TranscriptChunkEntity
 import com.twinmindx.domain.models.TranscriptChunk
 import com.twinmindx.domain.models.toDomain
@@ -36,10 +36,6 @@ class TranscriptionRepositoryImpl @Inject constructor(
     override suspend fun getTranscriptForMeeting(meetingId: String): List<TranscriptChunk> =
         transcriptChunkDao.getTranscriptForMeeting(meetingId).map { it.toDomain() }
 
-    /**
-     * Enqueues a [TranscriptionWorker] for the given audio chunk.
-     * Uses a unique work name per chunk so duplicate workers are avoided.
-     */
     internal fun enqueueChunkTranscription(chunk: AudioChunkEntity) {
         val inputData = Data.Builder()
             .putString(TranscriptionWorker.KEY_CHUNK_ID, chunk.id)
@@ -57,22 +53,14 @@ class TranscriptionRepositoryImpl @Inject constructor(
         )
     }
 
-    /**
-     * Resets all non-DONE chunks for [meetingId] back to PENDING,
-     * removes their stale transcript rows, and re-enqueues workers.
-     * This implements the "retry ALL audio on failure" requirement.
-     */
     override suspend fun retryAllChunks(meetingId: String) {
         val chunks = audioChunkDao.getChunksForMeeting(meetingId)
 
         chunks.filter { it.status != ChunkStatus.DONE }.forEach { chunk ->
-            // Clear any partial transcript for this chunk
             transcriptChunkDao.deleteForAudioChunk(chunk.id)
-            // Reset status so the worker will pick it up
             audioChunkDao.updateStatus(chunk.id, ChunkStatus.PENDING)
         }
 
-        // Re-enqueue all non-DONE chunks (replace existing work so it runs fresh)
         chunks.filter { it.status != ChunkStatus.DONE }.forEach { chunk ->
             val inputData = Data.Builder()
                 .putString(TranscriptionWorker.KEY_CHUNK_ID, chunk.id)

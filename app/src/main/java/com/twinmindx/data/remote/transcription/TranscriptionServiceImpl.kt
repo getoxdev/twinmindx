@@ -3,7 +3,6 @@ package com.twinmindx.data.remote.transcription
 import android.util.Log
 import com.twinmindx.BuildConfig
 import com.twinmindx.data.remote.transcription.network.WhisperApiService
-import com.twinmindx.data.remote.transcription.network.WhisperTranscriptionResponse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -16,12 +15,8 @@ import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/**
- * OpenAI Whisper API implementation of TranscriptionService.
- * Uploads audio chunks to OpenAI Whisper API and returns transcribed text.
- */
 @Singleton
-class OpenAIWhisperTranscriptionService @Inject constructor(
+class TranscriptionServiceImpl @Inject constructor(
     private val whisperApiService: WhisperApiService
 ) : TranscriptionService {
 
@@ -36,19 +31,16 @@ class OpenAIWhisperTranscriptionService @Inject constructor(
         return withContext(Dispatchers.IO) {
             val audioFile = File(filePath)
 
-            // Validate file exists
             if (!audioFile.exists()) {
                 throw IOException("Audio file not found: $filePath")
             }
 
-            // Validate file is not empty
             if (audioFile.length() == 0L) {
                 throw IOException("Audio file is empty: $filePath")
             }
 
             Log.d(TAG, "Transcribing chunk $chunkIndex, file size: ${audioFile.length()} bytes")
 
-            // Prepare multipart request
             val requestFile = audioFile.asRequestBody(AUDIO_MEDIA_TYPE)
             val filePart = MultipartBody.Part.createFormData("file", audioFile.name, requestFile)
             val modelPart = MODEL_WHISPER.toRequestBody("text/plain".toMediaTypeOrNull())
@@ -73,7 +65,6 @@ class OpenAIWhisperTranscriptionService @Inject constructor(
                 val transcriptionResponse = response.body()
                     ?: throw IOException("Empty response from Whisper API")
 
-                // Check for API-level errors
                 if (transcriptionResponse.error != null) {
                     Log.e(TAG, "Whisper API error: ${transcriptionResponse.error.message}")
                     throw IOException("Whisper API error: ${transcriptionResponse.error.message}")

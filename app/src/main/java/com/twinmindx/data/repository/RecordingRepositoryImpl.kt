@@ -4,7 +4,7 @@ import com.twinmindx.data.local.dao.AudioChunkDao
 import com.twinmindx.data.local.dao.MeetingDao
 import com.twinmindx.data.local.entity.AudioChunkEntity
 import com.twinmindx.data.local.entity.MeetingEntity
-import com.twinmindx.data.local.entity.MeetingStatus
+import com.twinmindx.data.local.MeetingStatus
 import com.twinmindx.domain.models.Meeting
 import com.twinmindx.domain.models.toDomain
 import com.twinmindx.domain.repository.RecordingRepository
@@ -90,7 +90,7 @@ class RecordingRepositoryImpl @Inject constructor(
     suspend fun getChunksForMeeting(meetingId: String): List<AudioChunkEntity> =
         audioChunkDao.getChunksForMeeting(meetingId)
 
-    suspend fun updateChunkStatus(chunkId: String, status: com.twinmindx.data.local.entity.ChunkStatus) =
+    suspend fun updateChunkStatus(chunkId: String, status: com.twinmindx.data.local.ChunkStatus) =
         audioChunkDao.updateStatus(chunkId, status)
 
     override suspend fun getActiveMeetings(): List<String> {

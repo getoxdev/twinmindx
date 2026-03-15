@@ -2,7 +2,8 @@ package com.twinmindx.di
 
 import com.google.gson.Gson
 import com.twinmindx.BuildConfig
-import com.twinmindx.data.remote.summary.OpenAiSummaryService
+import com.twinmindx.data.remote.summary.SummaryService
+import com.twinmindx.data.remote.summary.SummaryServiceImpl
 import com.twinmindx.data.remote.summary.network.OpenAIApiService
 import dagger.Module
 import dagger.Provides
@@ -55,11 +56,11 @@ object SummaryModule {
 
     @Provides
     @Singleton
-    fun provideOpenAiSummaryService(
+    fun provideSummaryService(
         openAIApiService: OpenAIApiService,
         gson: Gson
-    ): OpenAiSummaryService {
-        return OpenAiSummaryService(
+    ): SummaryService {
+        return SummaryServiceImpl(
             openAIApiService = openAIApiService,
             apiKey = BuildConfig.OPENAI_API_KEY,
             gson = gson

@@ -1,7 +1,7 @@
 package com.twinmindx.domain.models
 
 import com.twinmindx.data.local.entity.SummaryEntity
-import com.twinmindx.data.local.entity.SummaryStatus
+import com.twinmindx.data.local.SummaryStatus
 import org.json.JSONArray
 
 data class Summary(
@@ -15,6 +15,13 @@ data class Summary(
     val errorMessage: String?,
     val createdAtMs: Long,
     val updatedAtMs: Long
+)
+
+data class SummaryResult(
+    val title: String,
+    val summary: String,
+    val actionItems: List<String>,
+    val keyPoints: List<String>
 )
 
 fun SummaryEntity.toDomain(): Summary {

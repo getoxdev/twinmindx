@@ -4,10 +4,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
-
-enum class ChunkStatus {
-    PENDING, TRANSCRIBING, DONE, FAILED
-}
+import com.twinmindx.data.local.ChunkStatus
 
 @Entity(
     tableName = "audio_chunks",

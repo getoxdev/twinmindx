@@ -7,7 +7,7 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import com.twinmindx.data.local.dao.SummaryDao
 import com.twinmindx.data.local.entity.SummaryEntity
-import com.twinmindx.data.local.entity.SummaryStatus
+import com.twinmindx.data.local.SummaryStatus
 import com.twinmindx.domain.models.Summary
 import com.twinmindx.domain.models.toDomain
 import com.twinmindx.domain.repository.SummaryRepository

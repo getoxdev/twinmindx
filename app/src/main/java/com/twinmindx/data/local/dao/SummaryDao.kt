@@ -5,7 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.twinmindx.data.local.entity.SummaryEntity
-import com.twinmindx.data.local.entity.SummaryStatus
+import com.twinmindx.data.local.SummaryStatus
 import kotlinx.coroutines.flow.Flow
 
 @Dao

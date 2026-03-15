@@ -255,7 +255,6 @@ class RecordingService : Service() {
                                 bytes[i * 2] = (buffer[i].toInt() and 0xFF).toByte()
                                 bytes[i * 2 + 1] = ((buffer[i].toInt() shr 8) and 0xFF).toByte()
 
-                                // Fill overlap buffer with the last 2 seconds of audio
                                 overlapBuffer!![overlapBufferIndex % overlapSamples] = buffer[i]
                                 overlapBufferIndex++
                             }
@@ -278,7 +277,7 @@ class RecordingService : Service() {
                     AudioUtils.updateWavHeader(file, totalSamplesWritten)
 
                     if (_recordingState.value == RecordingState.STOPPED && totalSamplesWritten > 0) {
-                        val savedChunk = recordingRepository.saveAudioChunk(
+                        recordingRepository.saveAudioChunk(
                             meetingId = meetingId,
                             chunkIndex = currentChunkIndex,
                             filePath = file.absolutePath,
@@ -292,13 +291,12 @@ class RecordingService : Service() {
                     break
                 }
 
-                val savedChunk = recordingRepository.saveAudioChunk(
+                recordingRepository.saveAudioChunk(
                     meetingId = meetingId,
                     chunkIndex = currentChunkIndex,
                     filePath = file.absolutePath,
                     durationMs = CHUNK_DURATION_MS
                 )
-
                 savedChunkCount++
                 chunkIndex++
             }

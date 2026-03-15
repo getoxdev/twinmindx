@@ -2,9 +2,6 @@ package com.twinmindx.data.remote.transcription.network
 
 import com.google.gson.annotations.SerializedName
 
-/**
- * Response model for OpenAI Whisper transcription API.
- */
 data class WhisperTranscriptionResponse(
     @SerializedName("text")
     val text: String,

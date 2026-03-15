@@ -6,7 +6,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import com.twinmindx.data.local.entity.MeetingEntity
-import com.twinmindx.data.local.entity.MeetingStatus
+import com.twinmindx.data.local.MeetingStatus
 import kotlinx.coroutines.flow.Flow
 
 @Dao

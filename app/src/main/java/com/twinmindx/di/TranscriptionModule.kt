@@ -1,7 +1,7 @@
 package com.twinmindx.di
 
-import com.twinmindx.data.transcription.MockTranscriptionService
-import com.twinmindx.data.transcription.TranscriptionService
+import com.twinmindx.data.remote.transcription.MockTranscriptionService
+import com.twinmindx.data.remote.transcription.TranscriptionService
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn

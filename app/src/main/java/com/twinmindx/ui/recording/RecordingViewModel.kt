@@ -7,7 +7,7 @@ import android.content.ServiceConnection
 import android.os.IBinder
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.twinmindx.domain.repositories.RecordingRepository
+import com.twinmindx.domain.repository.RecordingRepository
 import com.twinmindx.domain.models.Meeting
 import com.twinmindx.service.RecordingService
 import com.twinmindx.service.RecordingState

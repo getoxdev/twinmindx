@@ -1,7 +1,7 @@
 package com.twinmindx.domain.models
 
-import com.twinmindx.data.db.entity.SummaryEntity
-import com.twinmindx.data.db.entity.SummaryStatus
+import com.twinmindx.data.local.entity.SummaryEntity
+import com.twinmindx.data.local.entity.SummaryStatus
 import org.json.JSONArray
 
 data class Summary(

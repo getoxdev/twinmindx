@@ -1,6 +1,6 @@
 package com.twinmindx.domain.models
 
-import com.twinmindx.data.db.entity.TranscriptChunkEntity
+import com.twinmindx.data.local.entity.TranscriptChunkEntity
 
 data class TranscriptChunk(
     val id: String,

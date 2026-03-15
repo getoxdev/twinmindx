@@ -2,11 +2,11 @@ package com.twinmindx.di
 
 import android.content.Context
 import androidx.room.Room
-import com.twinmindx.data.db.AppDatabase
-import com.twinmindx.data.db.dao.AudioChunkDao
-import com.twinmindx.data.db.dao.MeetingDao
-import com.twinmindx.data.db.dao.SummaryDao
-import com.twinmindx.data.db.dao.TranscriptChunkDao
+import com.twinmindx.data.local.AppDatabase
+import com.twinmindx.data.local.dao.AudioChunkDao
+import com.twinmindx.data.local.dao.MeetingDao
+import com.twinmindx.data.local.dao.SummaryDao
+import com.twinmindx.data.local.dao.TranscriptChunkDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

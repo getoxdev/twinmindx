@@ -1,7 +1,7 @@
 package com.twinmindx.domain.models
 
-import com.twinmindx.data.db.entity.MeetingEntity
-import com.twinmindx.data.db.entity.MeetingStatus
+import com.twinmindx.data.local.entity.MeetingEntity
+import com.twinmindx.data.local.entity.MeetingStatus
 
 data class Meeting(
     val id: String,

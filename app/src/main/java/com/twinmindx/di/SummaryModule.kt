@@ -2,8 +2,8 @@ package com.twinmindx.di
 
 import com.google.gson.Gson
 import com.twinmindx.BuildConfig
-import com.twinmindx.data.summary.OpenAiSummaryService
-import com.twinmindx.data.summary.network.OpenAIApiService
+import com.twinmindx.data.remote.summary.OpenAiSummaryService
+import com.twinmindx.data.remote.summary.network.OpenAIApiService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

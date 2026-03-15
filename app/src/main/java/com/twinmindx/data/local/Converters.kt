@@ -1,9 +1,9 @@
-package com.twinmindx.data.db
+package com.twinmindx.data.local
 
 import androidx.room.TypeConverter
-import com.twinmindx.data.db.entity.ChunkStatus
-import com.twinmindx.data.db.entity.MeetingStatus
-import com.twinmindx.data.db.entity.SummaryStatus
+import com.twinmindx.data.local.entity.ChunkStatus
+import com.twinmindx.data.local.entity.MeetingStatus
+import com.twinmindx.data.local.entity.SummaryStatus
 
 class Converters {
 

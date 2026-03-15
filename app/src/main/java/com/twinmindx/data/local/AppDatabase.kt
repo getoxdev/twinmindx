@@ -1,18 +1,18 @@
-package com.twinmindx.data.db
+package com.twinmindx.data.local
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
-import com.twinmindx.data.db.dao.AudioChunkDao
-import com.twinmindx.data.db.dao.MeetingDao
-import com.twinmindx.data.db.dao.SummaryDao
-import com.twinmindx.data.db.dao.TranscriptChunkDao
-import com.twinmindx.data.db.entity.AudioChunkEntity
-import com.twinmindx.data.db.entity.MeetingEntity
-import com.twinmindx.data.db.entity.SummaryEntity
-import com.twinmindx.data.db.entity.TranscriptChunkEntity
+import com.twinmindx.data.local.dao.AudioChunkDao
+import com.twinmindx.data.local.dao.MeetingDao
+import com.twinmindx.data.local.dao.SummaryDao
+import com.twinmindx.data.local.dao.TranscriptChunkDao
+import com.twinmindx.data.local.entity.AudioChunkEntity
+import com.twinmindx.data.local.entity.MeetingEntity
+import com.twinmindx.data.local.entity.SummaryEntity
+import com.twinmindx.data.local.entity.TranscriptChunkEntity
 
 @Database(
     entities = [

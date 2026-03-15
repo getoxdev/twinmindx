@@ -1,4 +1,4 @@
-package com.twinmindx.data.transcription
+package com.twinmindx.data.remote.transcription
 
 import kotlinx.coroutines.delay
 import javax.inject.Inject

@@ -47,7 +47,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.twinmindx.R
-import com.twinmindx.data.db.entity.MeetingStatus
+import com.twinmindx.data.local.entity.MeetingStatus
 import com.twinmindx.domain.models.Meeting
 import com.twinmindx.ui.theme.AccentOrange
 import com.twinmindx.ui.theme.CardBlueLight

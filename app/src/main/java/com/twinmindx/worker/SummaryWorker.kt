@@ -5,10 +5,10 @@ import android.util.Log
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import com.twinmindx.data.db.dao.SummaryDao
-import com.twinmindx.data.db.entity.SummaryStatus
-import com.twinmindx.domain.repositories.TranscriptionRepository
-import com.twinmindx.data.summary.OpenAiSummaryService
+import com.twinmindx.data.local.dao.SummaryDao
+import com.twinmindx.data.local.entity.SummaryStatus
+import com.twinmindx.domain.repository.TranscriptionRepository
+import com.twinmindx.data.remote.summary.OpenAiSummaryService
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.withTimeout

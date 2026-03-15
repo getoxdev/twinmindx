@@ -1,27 +1,32 @@
-package com.twinmindx.data.db.entity
+package com.twinmindx.data.local.entity
 
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 
+enum class ChunkStatus {
+    PENDING, TRANSCRIBING, DONE, FAILED
+}
+
 @Entity(
-    tableName = "transcript_chunks",
+    tableName = "audio_chunks",
     foreignKeys = [
         ForeignKey(
-            entity = AudioChunkEntity::class,
+            entity = MeetingEntity::class,
             parentColumns = ["id"],
-            childColumns = ["audioChunkId"],
+            childColumns = ["meetingId"],
             onDelete = ForeignKey.CASCADE
         )
     ],
-    indices = [Index("audioChunkId"), Index("meetingId")]
+    indices = [Index("meetingId")]
 )
-data class TranscriptChunkEntity(
+data class AudioChunkEntity(
     @PrimaryKey val id: String,
     val meetingId: String,
-    val audioChunkId: String,
     val chunkIndex: Int,
-    val text: String,
+    val filePath: String,
+    val durationMs: Long,
+    val status: ChunkStatus = ChunkStatus.PENDING,
     val createdAtMs: Long = System.currentTimeMillis()
 )

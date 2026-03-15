@@ -5,12 +5,12 @@ import android.util.Log
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import com.twinmindx.data.db.dao.AudioChunkDao
-import com.twinmindx.data.db.entity.ChunkStatus
-import com.twinmindx.data.db.entity.MeetingStatus
-import com.twinmindx.domain.repositories.RecordingRepository
-import com.twinmindx.domain.repositories.TranscriptionRepository
-import com.twinmindx.data.transcription.TranscriptionService
+import com.twinmindx.data.local.dao.AudioChunkDao
+import com.twinmindx.data.local.entity.ChunkStatus
+import com.twinmindx.data.local.entity.MeetingStatus
+import com.twinmindx.domain.repository.RecordingRepository
+import com.twinmindx.domain.repository.TranscriptionRepository
+import com.twinmindx.data.remote.transcription.TranscriptionService
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 

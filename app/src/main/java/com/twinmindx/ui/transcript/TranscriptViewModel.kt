@@ -3,9 +3,8 @@ package com.twinmindx.ui.transcript
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.twinmindx.data.db.entity.MeetingStatus
-import com.twinmindx.domain.repositories.RecordingRepository
-import com.twinmindx.domain.repositories.TranscriptionRepository
+import com.twinmindx.domain.repository.RecordingRepository
+import com.twinmindx.domain.repository.TranscriptionRepository
 import com.twinmindx.domain.models.Meeting
 import com.twinmindx.domain.models.TranscriptChunk
 import dagger.hilt.android.lifecycle.HiltViewModel

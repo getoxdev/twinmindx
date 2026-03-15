@@ -37,7 +37,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.twinmindx.data.db.entity.SummaryStatus
+import com.twinmindx.data.local.entity.SummaryStatus
 import com.twinmindx.domain.models.Summary
 import com.twinmindx.ui.theme.PrimaryBlue
 import com.twinmindx.ui.theme.StatusRecording

@@ -1,11 +1,12 @@
-package com.twinmindx.data.summary
+package com.twinmindx.data.remote.summary
 
 import android.util.Log
 import com.google.gson.Gson
-import com.twinmindx.data.summary.network.ChatCompletionRequest
-import com.twinmindx.data.summary.network.Message
-import com.twinmindx.data.summary.network.OpenAIApiService
-import com.twinmindx.data.summary.network.OpenAiErrorResponse
+import com.twinmindx.data.remote.summary.network.ChatCompletionRequest
+import com.twinmindx.data.remote.summary.network.ChatCompletionResponse
+import com.twinmindx.data.remote.summary.network.Message
+import com.twinmindx.data.remote.summary.network.OpenAIApiService
+import com.twinmindx.data.remote.summary.network.OpenAIErrorResponse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -82,7 +83,7 @@ class OpenAiSummaryService @Inject constructor(
                     if (data == "[DONE]") break
 
                     try {
-                        val streamResponse = gson.fromJson(data, com.twinmindx.data.summary.network.ChatCompletionResponse::class.java)
+                        val streamResponse = gson.fromJson(data, ChatCompletionResponse::class.java)
                         val delta = streamResponse.choices?.firstOrNull()?.delta?.content ?: ""
 
                         if (delta.isNotEmpty()) {
@@ -123,7 +124,7 @@ class OpenAiSummaryService @Inject constructor(
 
     private fun parseApiError(errorBody: String, code: Int): String {
         return try {
-            val errorResponse = gson.fromJson(errorBody, OpenAiErrorResponse::class.java)
+            val errorResponse = gson.fromJson(errorBody, OpenAIErrorResponse::class.java)
             val message = errorResponse.error?.message ?: errorBody
             "OpenAI API error ($code): $message"
         } catch (_: Exception) {

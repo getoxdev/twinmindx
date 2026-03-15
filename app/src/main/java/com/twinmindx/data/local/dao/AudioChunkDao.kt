@@ -1,12 +1,12 @@
-package com.twinmindx.data.db.dao
+package com.twinmindx.data.local.dao
 
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-import com.twinmindx.data.db.entity.AudioChunkEntity
-import com.twinmindx.data.db.entity.ChunkStatus
+import com.twinmindx.data.local.entity.AudioChunkEntity
+import com.twinmindx.data.local.entity.ChunkStatus
 import kotlinx.coroutines.flow.Flow
 
 @Dao

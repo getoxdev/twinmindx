@@ -1,12 +1,12 @@
-package com.twinmindx.data.db.dao
+package com.twinmindx.data.local.dao
 
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-import com.twinmindx.data.db.entity.MeetingEntity
-import com.twinmindx.data.db.entity.MeetingStatus
+import com.twinmindx.data.local.entity.MeetingEntity
+import com.twinmindx.data.local.entity.MeetingStatus
 import kotlinx.coroutines.flow.Flow
 
 @Dao

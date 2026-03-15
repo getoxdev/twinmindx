@@ -1,4 +1,4 @@
-package com.twinmindx.data.summary.network
+package com.twinmindx.data.remote.summary.network
 
 import okhttp3.ResponseBody
 import retrofit2.Response

@@ -1,10 +1,10 @@
-package com.twinmindx.data.db.dao
+package com.twinmindx.data.local.dao
 
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import com.twinmindx.data.db.entity.TranscriptChunkEntity
+import com.twinmindx.data.local.entity.TranscriptChunkEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao

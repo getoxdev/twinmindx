@@ -8,6 +8,7 @@ interface RecordingRepository {
     fun observeMeeting(meetingId: String): Flow<Meeting?>
     suspend fun createMeeting(): String
     suspend fun updateMeetingStatus(meetingId: String, status: String)
+    suspend fun updateMeetingTitle(meetingId: String, title: String)
     suspend fun finalizeMeeting(meetingId: String, totalChunks: Int)
     suspend fun saveAudioChunk(
         meetingId: String,

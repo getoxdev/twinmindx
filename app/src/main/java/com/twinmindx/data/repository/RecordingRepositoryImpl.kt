@@ -32,8 +32,7 @@ class RecordingRepositoryImpl @Inject constructor(
 
     override suspend fun createMeeting(): String {
         val id = UUID.randomUUID().toString()
-        val formatter = SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault())
-        val title = "Meeting - ${formatter.format(Date())}"
+        val title = "Untitled Note"
         val entity = MeetingEntity(
             id = id,
             title = title,
@@ -48,6 +47,10 @@ class RecordingRepositoryImpl @Inject constructor(
     override suspend fun updateMeetingStatus(meetingId: String, status: String) {
         val meetingStatus = MeetingStatus.valueOf(status)
         meetingDao.updateStatus(meetingId, meetingStatus)
+    }
+
+    override suspend fun updateMeetingTitle(meetingId: String, title: String) {
+        meetingDao.updateTitle(meetingId, title)
     }
 
     override suspend fun finalizeMeeting(meetingId: String, totalChunks: Int) {

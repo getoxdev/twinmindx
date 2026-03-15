@@ -42,6 +42,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
@@ -114,30 +115,22 @@ fun DashboardScreen(
             .background(MaterialTheme.colorScheme.background)
             .padding(top = 32.dp)
     ) {
+        GreetingSection()
+        Illustration()
+        Text(
+            text = "Your Notes",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
+            color = PrimaryBlue
+        )
+
         LazyColumn(
             modifier = Modifier.weight(1f),
             contentPadding = PaddingValues(bottom = 16.dp)
         ) {
-            item {
-                GreetingSection()
-            }
-            
-            item {
-                Illustration()
-            }
-
-            item {
-                Text(
-                    text = "Your Notes",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
-                    color = PrimaryBlue
-                )
-            }
             itemsIndexed(meetings) { index, meeting ->
                 MeetingCard(
-                    index = index,
                     meeting = meeting,
                     onClick = {
                         when (meeting.status) {
@@ -204,7 +197,6 @@ fun Illustration() {
 
 @Composable
 fun MeetingCard(
-    index: Int,
     meeting: Meeting,
     onClick: () -> Unit
 ) {
@@ -244,7 +236,9 @@ fun MeetingCard(
             Spacer(modifier = Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    "Meeting ${index + 1}",
+                    text = meeting.title,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.SemiBold,
                     color = Color(0xFF1E293B)

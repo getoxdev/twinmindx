@@ -1,6 +1,6 @@
 package com.twinmindx.di
 
-import com.twinmindx.data.remote.transcription.MockTranscriptionService
+import com.twinmindx.data.remote.transcription.OpenAIWhisperTranscriptionService
 import com.twinmindx.data.remote.transcription.TranscriptionService
 import dagger.Binds
 import dagger.Module
@@ -15,6 +15,6 @@ abstract class TranscriptionModule {
     @Binds
     @Singleton
     abstract fun bindTranscriptionService(
-        mock: MockTranscriptionService
+        whisperService: OpenAIWhisperTranscriptionService
     ): TranscriptionService
 }

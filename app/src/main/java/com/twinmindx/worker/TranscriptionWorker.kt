@@ -39,21 +39,18 @@ class TranscriptionWorker @AssistedInject constructor(
         val audioChunk = audioChunkDao.getChunkById(chunkId)
             ?: run {
                 Log.w(TAG, "Chunk $chunkId not found — skipping.")
-                return Result.success() // chunk was deleted; nothing to do
+                return Result.success()
             }
 
-        // If already DONE, no work needed
         if (audioChunk.status == ChunkStatus.DONE) {
             return Result.success()
         }
 
         return try {
-            // Mark as in-progress
             audioChunkDao.updateStatus(chunkId, ChunkStatus.TRANSCRIBING)
 
             val text = transcriptionService.transcribe(audioChunk.filePath, audioChunk.chunkIndex)
 
-            // Persist transcript row
             transcriptionRepository.saveTranscriptChunk(
                 meetingId = audioChunk.meetingId,
                 audioChunkId = chunkId,
@@ -61,10 +58,8 @@ class TranscriptionWorker @AssistedInject constructor(
                 text = text
             )
 
-            // Mark chunk done
             audioChunkDao.updateStatus(chunkId, ChunkStatus.DONE)
 
-            // Check if all chunks for this meeting are done → mark meeting COMPLETED
             val remainingCount = audioChunkDao.getPendingChunkCount(audioChunk.meetingId)
             if (remainingCount == 0) {
                 val meeting = recordingRepository.getMeetingById(audioChunk.meetingId)
@@ -82,11 +77,10 @@ class TranscriptionWorker @AssistedInject constructor(
             Log.e(TAG, "Transcription failed for chunk $chunkId (attempt $runAttemptCount)", e)
 
             if (runAttemptCount < MAX_ATTEMPTS - 1) {
-                // Restore to PENDING so next attempt picks it up
                 audioChunkDao.updateStatus(chunkId, ChunkStatus.PENDING)
                 Result.retry()
             } else {
-                // Permanent failure — mark chunk and meeting as ERROR
+
                 audioChunkDao.updateStatus(chunkId, ChunkStatus.FAILED)
                 recordingRepository.updateMeetingStatus(audioChunk.meetingId, "ERROR")
                 Result.failure()

@@ -7,6 +7,7 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.twinmindx.data.local.dao.SummaryDao
 import com.twinmindx.data.local.entity.SummaryStatus
+import com.twinmindx.domain.repository.RecordingRepository
 import com.twinmindx.domain.repository.TranscriptionRepository
 import com.twinmindx.data.remote.summary.OpenAiSummaryService
 import dagger.assisted.Assisted
@@ -20,6 +21,7 @@ class SummaryWorker @AssistedInject constructor(
     @Assisted workerParams: WorkerParameters,
     private val summaryDao: SummaryDao,
     private val transcriptionRepository: TranscriptionRepository,
+    private val recordingRepository: RecordingRepository,
     private val openAiSummaryService: OpenAiSummaryService
 ) : CoroutineWorker(context, workerParams) {
 
@@ -99,6 +101,11 @@ class SummaryWorker @AssistedInject constructor(
                 status = SummaryStatus.COMPLETED,
                 updatedAtMs = System.currentTimeMillis()
             )
+
+            // Update meeting title with the generated summary title
+            result.title?.let { title ->
+                recordingRepository.updateMeetingTitle(meetingId, title)
+            }
 
             Log.d(TAG, "Summary generation completed for meeting: $meetingId")
             Result.success()

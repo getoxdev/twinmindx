@@ -36,6 +36,9 @@ interface MeetingDao {
     @Query("UPDATE meetings SET endTimeMs = :endTimeMs, status = :status, totalChunks = :totalChunks WHERE id = :id")
     suspend fun updateEndTime(id: String, endTimeMs: Long, status: MeetingStatus, totalChunks: Int)
 
+    @Query("UPDATE meetings SET title = :title WHERE id = :id")
+    suspend fun updateTitle(id: String, title: String)
+
     @Query("DELETE FROM meetings WHERE id = :id")
     suspend fun deleteById(id: String)
 }

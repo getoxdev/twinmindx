@@ -574,17 +574,25 @@ class RecordingService : Service() {
         audioManager.registerAudioDeviceCallback(audioDeviceCallback, null)
     }
 
+    private var lastHeadsetPlugState: Int? = null
+
     private val headsetReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             if (intent?.action == Intent.ACTION_HEADSET_PLUG) {
                 val state = intent.getIntExtra("state", -1)
+                if (state !in 0..1) return
+
+                val previousState = lastHeadsetPlugState
+                lastHeadsetPlugState = state
+
+                if (previousState == null || previousState == state) return
+
                 if (_recordingState.value == RecordingState.RECORDING) {
-                    val message =
-                        when(state) {
-                            0 -> "Audio source changed - Wired headset disconnected"
-                            1 -> "Audio source changed - Wired headset connected"
-                            else -> "Recording..."
-                        }
+                    val message = when (state) {
+                        0 -> "Audio source changed - Wired headset disconnected"
+                        1 -> "Audio source changed - Wired headset connected"
+                        else -> "Recording..."
+                    }
                     _statusMessage.value = message
                     updateNotification()
 
@@ -602,7 +610,8 @@ class RecordingService : Service() {
 
     private fun registerHeadsetReceiver() {
         val filter = IntentFilter(Intent.ACTION_HEADSET_PLUG)
-        registerReceiver(headsetReceiver, filter)
+        val stickyIntent = registerReceiver(headsetReceiver, filter)
+        lastHeadsetPlugState = stickyIntent?.getIntExtra("state", -1)?.takeIf { it in 0..1 }
     }
 
     private fun createChunkFile(meetingId: String, index: Int): File {

@@ -10,12 +10,14 @@ import com.twinmindx.ui.dashboard.DashboardScreen
 import com.twinmindx.ui.recording.RecordingScreen
 import com.twinmindx.ui.summary.SummaryScreen
 import com.twinmindx.ui.transcript.TranscriptScreen
+import com.twinmindx.ui.webview.WebViewScreen
 
 object Routes {
     const val DASHBOARD = "dashboard"
     const val RECORDING = "recording/{meetingId}"
     const val TRANSCRIPT = "transcript/{meetingId}"
     const val SUMMARY = "summary/{meetingId}"
+    const val PROFILE = "profile"
 
     fun recording(meetingId: String) = "recording/$meetingId"
     fun transcript(meetingId: String) = "transcript/$meetingId"
@@ -37,6 +39,9 @@ fun AppNavigation() {
                 },
                 onNavigateToTranscript = { meetingId ->
                     navController.navigate(Routes.transcript(meetingId))
+                },
+                onNavigateToProfile = {
+                    navController.navigate(Routes.PROFILE)
                 }
             )
         }
@@ -74,6 +79,14 @@ fun AppNavigation() {
             arguments = listOf(navArgument("meetingId") { type = NavType.StringType })
         ) {
             SummaryScreen(
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Routes.PROFILE) {
+            WebViewScreen(
+                url = "https://github.com/getoxdev",
+                title = "GitHub Profile",
                 onBack = { navController.popBackStack() }
             )
         }

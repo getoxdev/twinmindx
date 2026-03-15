@@ -122,7 +122,6 @@ fun TranscriptTopBar(
                 tint = PrimaryBlue,
                 modifier = Modifier.size(20.dp)
             )
-            Spacer(modifier = Modifier.width(4.dp))
             Text(
                 text = "Back",
                 color = PrimaryBlue,
@@ -130,9 +129,7 @@ fun TranscriptTopBar(
                 fontWeight = FontWeight.Medium
             )
         }
-
         Spacer(modifier = Modifier.width(16.dp))
-
         Text(
             text = title,
             style = MaterialTheme.typography.titleLarge,
@@ -149,7 +146,6 @@ fun TranscriptChunkItem(
     Column(
         modifier = Modifier.fillMaxWidth()
     ) {
-        // Timestamp
         Text(
             text = formatTimestamp(chunk.createdAtMs),
             style = MaterialTheme.typography.bodySmall,
@@ -159,7 +155,6 @@ fun TranscriptChunkItem(
 
         Spacer(modifier = Modifier.height(4.dp))
 
-        // Transcript text card
         OutlinedCard(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp),

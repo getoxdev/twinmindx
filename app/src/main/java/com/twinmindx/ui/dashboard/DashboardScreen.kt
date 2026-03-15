@@ -124,26 +124,15 @@ fun DashboardScreen(
     }
 
     fun checkAndRequestPermissions() {
-        val hasMicPermission = ContextCompat.checkSelfPermission(
-            context,
-            Manifest.permission.RECORD_AUDIO
-        ) == PackageManager.PERMISSION_GRANTED
-
-        if (!hasMicPermission) {
-            permissionLauncher.launch(arrayOf(Manifest.permission.RECORD_AUDIO))
-            return
+        val permissionsToRequest = requiredPermissions.filter {
+            ContextCompat.checkSelfPermission(
+                context,
+                it
+            ) != PackageManager.PERMISSION_GRANTED
         }
 
-        val additionalPermissionsToRequest = requiredPermissions.filter {
-            it != Manifest.permission.RECORD_AUDIO &&
-                    ContextCompat.checkSelfPermission(
-                        context,
-                        it
-                    ) != PackageManager.PERMISSION_GRANTED
-        }
-
-        if (additionalPermissionsToRequest.isNotEmpty()) {
-            permissionLauncher.launch(additionalPermissionsToRequest.toTypedArray())
+        if (permissionsToRequest.isNotEmpty()) {
+            permissionLauncher.launch(permissionsToRequest.toTypedArray())
         } else {
             viewModel.startNewRecording(onNavigateToRecording)
         }

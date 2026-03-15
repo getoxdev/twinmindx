@@ -8,8 +8,8 @@ import androidx.work.WorkerParameters
 import com.twinmindx.data.db.dao.AudioChunkDao
 import com.twinmindx.data.db.entity.ChunkStatus
 import com.twinmindx.data.db.entity.MeetingStatus
-import com.twinmindx.data.repository.RecordingRepository
-import com.twinmindx.data.repository.TranscriptionRepository
+import com.twinmindx.domain.repositories.RecordingRepository
+import com.twinmindx.domain.repositories.TranscriptionRepository
 import com.twinmindx.data.transcription.TranscriptionService
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
@@ -70,7 +70,7 @@ class TranscriptionWorker @AssistedInject constructor(
                 val meeting = recordingRepository.getMeetingById(audioChunk.meetingId)
                 if (meeting?.status == MeetingStatus.TRANSCRIBING) {
                     recordingRepository.updateMeetingStatus(
-                        audioChunk.meetingId, MeetingStatus.COMPLETED
+                        audioChunk.meetingId, "COMPLETED"
                     )
                 }
             }
@@ -88,7 +88,7 @@ class TranscriptionWorker @AssistedInject constructor(
             } else {
                 // Permanent failure — mark chunk and meeting as ERROR
                 audioChunkDao.updateStatus(chunkId, ChunkStatus.FAILED)
-                recordingRepository.updateMeetingStatus(audioChunk.meetingId, MeetingStatus.ERROR)
+                recordingRepository.updateMeetingStatus(audioChunk.meetingId, "ERROR")
                 Result.failure()
             }
         }

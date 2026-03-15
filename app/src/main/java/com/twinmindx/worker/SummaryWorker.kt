@@ -7,7 +7,7 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.twinmindx.data.db.dao.SummaryDao
 import com.twinmindx.data.db.entity.SummaryStatus
-import com.twinmindx.data.repository.TranscriptionRepository
+import com.twinmindx.domain.repositories.TranscriptionRepository
 import com.twinmindx.data.summary.OpenAiSummaryService
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject

@@ -26,7 +26,7 @@ import android.telephony.TelephonyCallback
 import android.telephony.TelephonyManager
 import androidx.core.app.NotificationCompat
 import com.twinmindx.MainActivity
-import com.twinmindx.data.repository.RecordingRepository
+import com.twinmindx.domain.repositories.RecordingRepository
 import com.twinmindx.data.db.entity.ChunkStatus
 import com.twinmindx.util.AudioUtils
 import com.twinmindx.util.StorageUtils

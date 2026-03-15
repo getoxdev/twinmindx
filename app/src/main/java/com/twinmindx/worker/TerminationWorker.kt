@@ -6,20 +6,15 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.twinmindx.data.db.entity.ChunkStatus
 import com.twinmindx.data.db.entity.MeetingStatus
-import com.twinmindx.data.repository.RecordingRepository
+import com.twinmindx.data.repository.RecordingRepositoryImpl
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 
-/**
- * Worker that runs on app startup to recover from unexpected process termination.
- * Finalizes any active meetings that were recording when the app was killed,
- * and re-enqueues transcription jobs for pending chunks.
- */
 @HiltWorker
 class TerminationWorker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted workerParams: WorkerParameters,
-    private val recordingRepository: RecordingRepository,
+    private val recordingRepository: RecordingRepositoryImpl,
 ) : CoroutineWorker(context, workerParams) {
 
     companion object {
@@ -40,11 +35,11 @@ class TerminationWorker @AssistedInject constructor(
     }
 
     private suspend fun recoverActiveSessions() {
-        val activeMeetings = recordingRepository.getActiveMeetings()
+        val activeMeetingIds = recordingRepository.getActiveMeetings()
 
-        activeMeetings.forEach { meeting ->
-            val chunks = recordingRepository.getChunksForMeeting(meeting.id)
-            recordingRepository.finalizeMeeting(meeting.id, chunks.size)
+        activeMeetingIds.forEach { meetingId ->
+            val chunks = recordingRepository.getChunksForMeeting(meetingId)
+            recordingRepository.finalizeMeeting(meetingId, chunks.size)
 
             chunks.filter {
                 it.status == ChunkStatus.PENDING ||
@@ -56,9 +51,9 @@ class TerminationWorker @AssistedInject constructor(
                 }
             }
 
-            // Update meeting status if it was still in RECORDING/PAUSED
-            if (meeting.status == MeetingStatus.RECORDING || meeting.status == MeetingStatus.PAUSED) {
-                recordingRepository.updateMeetingStatus(meeting.id, MeetingStatus.TRANSCRIBING)
+            val meeting = recordingRepository.getMeetingById(meetingId)
+            if (meeting?.status == MeetingStatus.RECORDING || meeting?.status == MeetingStatus.PAUSED) {
+                recordingRepository.updateMeetingStatus(meetingId, "TRANSCRIBING")
             }
         }
     }

@@ -6,14 +6,7 @@ import retrofit2.http.Body
 import retrofit2.http.Header
 import retrofit2.http.POST
 
-interface OpenAiApi {
-
-    @POST("v1/chat/completions")
-    suspend fun createChatCompletion(
-        @Header("Authorization") authorization: String,
-        @Body request: ChatCompletionRequest
-    ): Response<ChatCompletionResponse>
-
+interface OpenAIApiService {
     @POST("v1/chat/completions")
     suspend fun createChatCompletionStreaming(
         @Header("Authorization") authorization: String,

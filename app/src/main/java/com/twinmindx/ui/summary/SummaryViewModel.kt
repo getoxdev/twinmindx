@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.twinmindx.data.db.entity.SummaryStatus
 import com.twinmindx.domain.models.Summary
-import com.twinmindx.data.repository.SummaryRepository
+import com.twinmindx.domain.repositories.SummaryRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow

@@ -4,8 +4,8 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.twinmindx.data.db.entity.MeetingStatus
-import com.twinmindx.data.repository.RecordingRepository
-import com.twinmindx.data.repository.TranscriptionRepository
+import com.twinmindx.domain.repositories.RecordingRepository
+import com.twinmindx.domain.repositories.TranscriptionRepository
 import com.twinmindx.domain.models.Meeting
 import com.twinmindx.domain.models.TranscriptChunk
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -46,7 +46,7 @@ class TranscriptViewModel @Inject constructor(
             _uiState.value = _uiState.value.copy(isRetrying = true)
             try {
                 // Reset meeting to TRANSCRIBING before retrying
-                recordingRepository.updateMeetingStatus(meetingId, MeetingStatus.TRANSCRIBING)
+                recordingRepository.updateMeetingStatus(meetingId, "TRANSCRIBING")
                 transcriptionRepository.retryAllChunks(meetingId)
             } finally {
                 _uiState.value = _uiState.value.copy(isRetrying = false)

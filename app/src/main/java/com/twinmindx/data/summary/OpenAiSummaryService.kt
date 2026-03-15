@@ -3,9 +3,8 @@ package com.twinmindx.data.summary
 import android.util.Log
 import com.google.gson.Gson
 import com.twinmindx.data.summary.network.ChatCompletionRequest
-import com.twinmindx.data.summary.network.Choice
 import com.twinmindx.data.summary.network.Message
-import com.twinmindx.data.summary.network.OpenAiApi
+import com.twinmindx.data.summary.network.OpenAIApiService
 import com.twinmindx.data.summary.network.OpenAiErrorResponse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -26,7 +25,7 @@ data class SummaryResult(
 
 @Singleton
 class OpenAiSummaryService @Inject constructor(
-    private val openAiApi: OpenAiApi,
+    private val openAIApiService: OpenAIApiService,
     private val apiKey: String,
     private val gson: Gson
 ) {
@@ -59,7 +58,7 @@ class OpenAiSummaryService @Inject constructor(
             )
         )
 
-        val response = openAiApi.createChatCompletionStreaming(
+        val response = openAIApiService.createChatCompletionStreaming(
             authorization = "Bearer $apiKey",
             request = request
         )
@@ -90,7 +89,7 @@ class OpenAiSummaryService @Inject constructor(
                             accumulated.append(delta)
                             emit(accumulated.toString())
                         }
-                    } catch (_: Exception) { // Ignore malformed SSE lines; they're sometimes empty
+                    } catch (_: Exception) {
                         Log.v(TAG, "Skipping SSE line: $data")
                     }
                 }

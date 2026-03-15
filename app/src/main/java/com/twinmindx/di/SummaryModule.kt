@@ -3,7 +3,7 @@ package com.twinmindx.di
 import com.google.gson.Gson
 import com.twinmindx.BuildConfig
 import com.twinmindx.data.summary.OpenAiSummaryService
-import com.twinmindx.data.summary.network.OpenAiApi
+import com.twinmindx.data.summary.network.OpenAIApiService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -49,18 +49,18 @@ object SummaryModule {
 
     @Provides
     @Singleton
-    fun provideOpenAiApi(retrofit: Retrofit): OpenAiApi {
-        return retrofit.create(OpenAiApi::class.java)
+    fun provideOpenAIApi(retrofit: Retrofit): OpenAIApiService {
+        return retrofit.create(OpenAIApiService::class.java)
     }
 
     @Provides
     @Singleton
     fun provideOpenAiSummaryService(
-        openAiApi: OpenAiApi,
+        openAIApiService: OpenAIApiService,
         gson: Gson
     ): OpenAiSummaryService {
         return OpenAiSummaryService(
-            openAiApi = openAiApi,
+            openAIApiService = openAIApiService,
             apiKey = BuildConfig.OPENAI_API_KEY,
             gson = gson
         )

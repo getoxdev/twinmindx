@@ -5,7 +5,7 @@ import android.content.Intent
 import android.os.Build
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.twinmindx.data.repository.RecordingRepository
+import com.twinmindx.domain.repositories.RecordingRepository
 import com.twinmindx.domain.models.Meeting
 import com.twinmindx.service.RecordingService
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -27,16 +27,16 @@ class DashboardViewModel @Inject constructor(
 
     fun startNewRecording(onMeetingCreated: (String) -> Unit) {
         viewModelScope.launch {
-            val meeting = recordingRepository.createMeeting()
+            val meetingId = recordingRepository.createMeeting()
             val intent = Intent(context, RecordingService::class.java).apply {
-                putExtra(RecordingService.EXTRA_MEETING_ID, meeting.id)
+                putExtra(RecordingService.EXTRA_MEETING_ID, meetingId)
             }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 context.startForegroundService(intent)
             } else {
                 context.startService(intent)
             }
-            onMeetingCreated(meeting.id)
+            onMeetingCreated(meetingId)
         }
     }
 }

@@ -6,8 +6,8 @@ import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.twinmindx.data.local.ChunkStatus
-import com.twinmindx.data.local.MeetingStatus
 import com.twinmindx.data.repository.RecordingRepositoryImpl
+import com.twinmindx.domain.repository.TranscriptionRepository
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 
@@ -16,6 +16,7 @@ class TerminationWorker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted workerParams: WorkerParameters,
     private val recordingRepository: RecordingRepositoryImpl,
+    private val transcriptionRepository: TranscriptionRepository,
 ) : CoroutineWorker(context, workerParams) {
 
     companion object {
@@ -24,7 +25,8 @@ class TerminationWorker @AssistedInject constructor(
 
     override suspend fun doWork(): Result {
         return try {
-            recoverActiveSessions()
+            val recoveredMeetingIds = recoverActiveSessions()
+            restartTranscribingForRecoveredSessions(recoveredMeetingIds)
             Result.success()
         } catch (e: Exception) {
             Log.e("TerminationWorker", "Termination recovery failed", e)
@@ -36,27 +38,25 @@ class TerminationWorker @AssistedInject constructor(
         }
     }
 
-    private suspend fun recoverActiveSessions() {
+    private suspend fun recoverActiveSessions(): List<String> {
         val activeMeetingIds = recordingRepository.getActiveMeetings()
 
         activeMeetingIds.forEach { meetingId ->
             val chunks = recordingRepository.getChunksForMeeting(meetingId)
             recordingRepository.finalizeMeeting(meetingId, chunks.size)
 
-            chunks.filter {
-                it.status == ChunkStatus.PENDING ||
-                it.status == ChunkStatus.TRANSCRIBING ||
-                it.status == ChunkStatus.FAILED
-            }.forEach { chunk ->
-                if (chunk.status == ChunkStatus.FAILED) {
-                    recordingRepository.updateChunkStatus(chunk.id, ChunkStatus.PENDING)
-                }
+            chunks.filter { it.status == ChunkStatus.FAILED }.forEach { chunk ->
+                recordingRepository.updateChunkStatus(chunk.id, ChunkStatus.PENDING)
             }
+        }
 
-            val meeting = recordingRepository.getMeetingById(meetingId)
-            if (meeting?.status == MeetingStatus.RECORDING || meeting?.status == MeetingStatus.PAUSED) {
-                recordingRepository.updateMeetingStatus(meetingId, "TRANSCRIBING")
-            }
+        return activeMeetingIds
+    }
+
+    private suspend fun restartTranscribingForRecoveredSessions(meetingIds: List<String>) {
+        meetingIds.forEach { meetingId ->
+            transcriptionRepository.retryAllChunks(meetingId)
         }
     }
 }
+

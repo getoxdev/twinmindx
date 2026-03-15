@@ -14,13 +14,12 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.twinmindx.data.db.entity.MeetingStatus
-import com.twinmindx.data.db.entity.TranscriptChunkEntity
+import com.twinmindx.domain.models.TranscriptChunk
 import com.twinmindx.ui.theme.CardBlueLight
 import com.twinmindx.ui.theme.PrimaryBlue
 import com.twinmindx.ui.theme.StatusRecording
@@ -145,7 +144,7 @@ fun TranscriptTopBar(
 
 @Composable
 fun TranscriptChunkItem(
-    chunk: TranscriptChunkEntity
+    chunk: TranscriptChunk
 ) {
     Column(
         modifier = Modifier.fillMaxWidth()

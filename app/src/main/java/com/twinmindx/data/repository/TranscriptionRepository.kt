@@ -10,8 +10,11 @@ import com.twinmindx.data.db.dao.TranscriptChunkDao
 import com.twinmindx.data.db.entity.AudioChunkEntity
 import com.twinmindx.data.db.entity.ChunkStatus
 import com.twinmindx.data.db.entity.TranscriptChunkEntity
+import com.twinmindx.domain.models.TranscriptChunk
+import com.twinmindx.domain.models.toDomain
 import com.twinmindx.worker.TranscriptionWorker
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -24,11 +27,13 @@ class TranscriptionRepository @Inject constructor(
     private val workManager: WorkManager
 ) {
 
-    fun observeTranscriptForMeeting(meetingId: String): Flow<List<TranscriptChunkEntity>> =
-        transcriptChunkDao.observeTranscriptForMeeting(meetingId)
+    fun observeTranscriptForMeeting(meetingId: String): Flow<List<TranscriptChunk>> =
+        transcriptChunkDao.observeTranscriptForMeeting(meetingId).map { entities ->
+            entities.map { it.toDomain() }
+        }
 
-    suspend fun getTranscriptForMeeting(meetingId: String): List<TranscriptChunkEntity> =
-        transcriptChunkDao.getTranscriptForMeeting(meetingId)
+    suspend fun getTranscriptForMeeting(meetingId: String): List<TranscriptChunk> =
+        transcriptChunkDao.getTranscriptForMeeting(meetingId).map { it.toDomain() }
 
     /**
      * Enqueues a [TranscriptionWorker] for the given audio chunk.

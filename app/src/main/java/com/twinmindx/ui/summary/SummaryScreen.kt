@@ -18,14 +18,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -39,8 +37,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.twinmindx.data.db.entity.SummaryEntity
 import com.twinmindx.data.db.entity.SummaryStatus
+import com.twinmindx.domain.models.Summary
 import com.twinmindx.ui.theme.PrimaryBlue
 import com.twinmindx.ui.theme.StatusRecording
 import com.twinmindx.ui.theme.TextSecondary
@@ -69,7 +67,7 @@ fun SummaryScreen(
 
             SummaryStatus.COMPLETED -> {
                 SummaryContent(
-                    summary = summary!!,
+                    summary = summary,
                     viewModel = viewModel,
                     onBack = onBack
                 )
@@ -86,17 +84,17 @@ fun SummaryScreen(
 
 @Composable
 fun SummaryContent(
-    summary: SummaryEntity,
+    summary: Summary?,
     viewModel: SummaryViewModel,
     onBack: () -> Unit
 ) {
-    val actionItems = viewModel.parseJsonList(summary.actionItems)
-    val keyPoints = viewModel.parseJsonList(summary.keyPoints)
+    val actionItems = summary?.actionItems
+    val keyPoints = summary?.keyPoints
 
     Column(modifier = Modifier.fillMaxSize()) {
         SummaryTopBar(
-            title = summary.title ?: "Notes Summary",
-            subtitle = formatSubtitle(summary.createdAtMs),
+            title = summary?.title ?: "Notes Summary",
+            subtitle = if (summary?.createdAtMs != null) formatSubtitle(summary.createdAtMs) else "",
             onBack = onBack
         )
 
@@ -105,7 +103,7 @@ fun SummaryContent(
             contentPadding = PaddingValues(horizontal = 20.dp, vertical = 16.dp),
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
-            if (!summary.summary.isNullOrBlank()) {
+            if (!summary?.summary.isNullOrBlank()) {
                 item {
                     SummarySection(
                         title = "Summary",
@@ -122,7 +120,7 @@ fun SummaryContent(
                 }
             }
 
-            if (keyPoints.isNotEmpty()) {
+            if (keyPoints?.isNotEmpty() == true) {
                 item {
                     SummarySection(title = "Key Points") {
                         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -134,7 +132,7 @@ fun SummaryContent(
                 }
             }
 
-            if (actionItems.isNotEmpty()) {
+            if (actionItems?.isNotEmpty() == true) {
                 item {
                     SummarySection(title = "Action Items") {
                         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -185,14 +183,6 @@ fun SummaryTopBar(
                     color = PrimaryBlue,
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Medium
-                )
-            }
-
-            IconButton(onClick = { }) {
-                Text(
-                    text = "•••",
-                    color = PrimaryBlue,
-                    fontWeight = FontWeight.Bold
                 )
             }
         }
@@ -338,11 +328,6 @@ fun LoadingContent(
             }
         }
 
-        LinearProgressIndicator(
-            modifier = Modifier.fillMaxWidth(),
-            color = PrimaryBlue
-        )
-
         if (streamingText.isNullOrBlank()) {
             Box(
                 modifier = Modifier
@@ -426,13 +411,6 @@ fun ErrorContent(
             contentAlignment = Alignment.Center
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Icon(
-                    imageVector = Icons.Default.ErrorOutline,
-                    contentDescription = null,
-                    modifier = Modifier.size(48.dp),
-                    tint = StatusRecording
-                )
-                Spacer(modifier = Modifier.height(16.dp))
                 Text(
                     text = errorMessage,
                     style = MaterialTheme.typography.bodyMedium,

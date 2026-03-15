@@ -1,12 +1,16 @@
 package com.twinmindx.di
 
+import com.google.gson.Gson
 import com.twinmindx.BuildConfig
 import com.twinmindx.data.summary.OpenAiSummaryService
+import com.twinmindx.data.summary.network.OpenAiApi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
@@ -14,22 +18,51 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object SummaryModule {
 
+    private const val BASE_URL = "https://api.openai.com/"
+
+    @Provides
+    @Singleton
+    fun provideGson(): Gson {
+        return Gson()
+    }
+
     @Provides
     @Singleton
     fun provideOkHttpClient(): OkHttpClient {
         return OkHttpClient.Builder()
-            .connectTimeout(30, TimeUnit.SECONDS)
-            .readTimeout(120, TimeUnit.SECONDS) // generous for streaming
+            .connectTimeout(15, TimeUnit.SECONDS)
+            .readTimeout(60, TimeUnit.SECONDS)
             .writeTimeout(30, TimeUnit.SECONDS)
+            .callTimeout(90, TimeUnit.SECONDS)
             .build()
     }
 
     @Provides
     @Singleton
-    fun provideOpenAiSummaryService(okHttpClient: OkHttpClient): OpenAiSummaryService {
+    fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit {
+        return Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideOpenAiApi(retrofit: Retrofit): OpenAiApi {
+        return retrofit.create(OpenAiApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideOpenAiSummaryService(
+        openAiApi: OpenAiApi,
+        gson: Gson
+    ): OpenAiSummaryService {
         return OpenAiSummaryService(
-            okHttpClient = okHttpClient,
-            apiKey = BuildConfig.OPENAI_API_KEY
+            openAiApi = openAiApi,
+            apiKey = BuildConfig.OPENAI_API_KEY,
+            gson = gson
         )
     }
 }

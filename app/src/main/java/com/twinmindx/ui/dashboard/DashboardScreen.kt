@@ -48,7 +48,7 @@ import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.twinmindx.R
 import com.twinmindx.data.db.entity.MeetingStatus
-import com.twinmindx.domain.model.Meeting
+import com.twinmindx.domain.models.Meeting
 import com.twinmindx.ui.theme.AccentOrange
 import com.twinmindx.ui.theme.CardBlueLight
 import com.twinmindx.ui.theme.PrimaryBlue
@@ -173,7 +173,7 @@ fun GreetingSection() {
             .padding(horizontal = 20.dp, vertical = 16.dp)
     ) {
         Text(
-            text = "Hey user! Start using twinmindx",
+            text = "Hey! Start using twinmindx",
             style = MaterialTheme.typography.headlineSmall.copy(
                 fontSize = 24.sp,
                 lineHeight = 32.sp

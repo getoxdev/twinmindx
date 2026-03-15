@@ -8,7 +8,7 @@ import android.os.IBinder
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.twinmindx.data.repository.RecordingRepository
-import com.twinmindx.domain.model.Meeting
+import com.twinmindx.domain.models.Meeting
 import com.twinmindx.service.RecordingService
 import com.twinmindx.service.RecordingState
 import dagger.hilt.android.lifecycle.HiltViewModel

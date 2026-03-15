@@ -4,10 +4,10 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.twinmindx.data.db.entity.MeetingStatus
-import com.twinmindx.data.db.entity.TranscriptChunkEntity
 import com.twinmindx.data.repository.RecordingRepository
 import com.twinmindx.data.repository.TranscriptionRepository
-import com.twinmindx.domain.model.Meeting
+import com.twinmindx.domain.models.Meeting
+import com.twinmindx.domain.models.TranscriptChunk
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -34,7 +34,7 @@ class TranscriptViewModel @Inject constructor(
     val meeting: StateFlow<Meeting?> = recordingRepository.observeMeeting(meetingId)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
-    val transcriptChunks: StateFlow<List<TranscriptChunkEntity>> =
+    val transcriptChunks: StateFlow<List<TranscriptChunk>> =
         transcriptionRepository.observeTranscriptForMeeting(meetingId)
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 

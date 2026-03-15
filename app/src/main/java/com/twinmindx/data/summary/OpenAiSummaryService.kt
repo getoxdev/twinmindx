@@ -1,14 +1,16 @@
 package com.twinmindx.data.summary
 
 import android.util.Log
+import com.google.gson.Gson
+import com.twinmindx.data.summary.network.ChatCompletionRequest
+import com.twinmindx.data.summary.network.Choice
+import com.twinmindx.data.summary.network.Message
+import com.twinmindx.data.summary.network.OpenAiApi
+import com.twinmindx.data.summary.network.OpenAiErrorResponse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.IOException
@@ -24,13 +26,13 @@ data class SummaryResult(
 
 @Singleton
 class OpenAiSummaryService @Inject constructor(
-    private val okHttpClient: OkHttpClient,
-    private val apiKey: String
+    private val openAiApi: OpenAiApi,
+    private val apiKey: String,
+    private val gson: Gson
 ) {
 
     companion object {
         private const val TAG = "OpenAiSummaryService"
-        private const val API_URL = "https://api.openai.com/v1/chat/completions"
         private const val MODEL = "gpt-4o-mini"
 
         private val SYSTEM_PROMPT = """
@@ -48,41 +50,27 @@ class OpenAiSummaryService @Inject constructor(
     fun streamSummary(transcript: String): Flow<String> = flow {
         val userMessage = "Please analyze this meeting transcript and return the JSON summary:\n\n$transcript"
 
-        val requestBody = JSONObject().apply {
-            put("model", MODEL)
-            put("stream", true)
-            put("messages", JSONArray().apply {
-                put(JSONObject().apply {
-                    put("role", "system")
-                    put("content", SYSTEM_PROMPT)
-                })
-                put(JSONObject().apply {
-                    put("role", "user")
-                    put("content", userMessage)
-                })
-            })
-        }.toString()
+        val request = ChatCompletionRequest(
+            model = MODEL,
+            stream = true,
+            messages = listOf(
+                Message(role = "system", content = SYSTEM_PROMPT),
+                Message(role = "user", content = userMessage)
+            )
+        )
 
-        val request = Request.Builder()
-            .url(API_URL)
-            .addHeader("Authorization", "Bearer $apiKey")
-            .addHeader("Content-Type", "application/json")
-            .post(requestBody.toRequestBody("application/json".toMediaType()))
-            .build()
-
-        val response = okHttpClient.newCall(request).execute()
+        val response = openAiApi.createChatCompletionStreaming(
+            authorization = "Bearer $apiKey",
+            request = request
+        )
 
         if (!response.isSuccessful) {
-            val errorBody = response.body?.string() ?: "Unknown error"
-            response.close()
-            val errorMessage = parseApiError(errorBody, response.code)
+            val errorBody = response.errorBody()?.string() ?: "Unknown error"
+            val errorMessage = parseApiError(errorBody, response.code())
             throw IOException(errorMessage)
         }
 
-        val responseBody = response.body ?: run {
-            response.close()
-            throw IOException("Empty response from OpenAI")
-        }
+        val responseBody = response.body() ?: throw IOException("Empty response from OpenAI")
 
         val accumulated = StringBuilder()
 
@@ -95,12 +83,8 @@ class OpenAiSummaryService @Inject constructor(
                     if (data == "[DONE]") break
 
                     try {
-                        val json = JSONObject(data)
-                        val delta = json
-                            .getJSONArray("choices")
-                            .getJSONObject(0)
-                            .getJSONObject("delta")
-                            .optString("content", "")
+                        val streamResponse = gson.fromJson(data, com.twinmindx.data.summary.network.ChatCompletionResponse::class.java)
+                        val delta = streamResponse.choices?.firstOrNull()?.delta?.content ?: ""
 
                         if (delta.isNotEmpty()) {
                             accumulated.append(delta)
@@ -140,8 +124,8 @@ class OpenAiSummaryService @Inject constructor(
 
     private fun parseApiError(errorBody: String, code: Int): String {
         return try {
-            val json = JSONObject(errorBody)
-            val message = json.optJSONObject("error")?.optString("message") ?: errorBody
+            val errorResponse = gson.fromJson(errorBody, OpenAiErrorResponse::class.java)
+            val message = errorResponse.error?.message ?: errorBody
             "OpenAI API error ($code): $message"
         } catch (_: Exception) {
             "OpenAI API error ($code): $errorBody"

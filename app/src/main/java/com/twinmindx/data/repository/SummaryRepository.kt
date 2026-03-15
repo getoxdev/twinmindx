@@ -8,8 +8,11 @@ import androidx.work.WorkManager
 import com.twinmindx.data.db.dao.SummaryDao
 import com.twinmindx.data.db.entity.SummaryEntity
 import com.twinmindx.data.db.entity.SummaryStatus
+import com.twinmindx.domain.models.Summary
+import com.twinmindx.domain.models.toDomain
 import com.twinmindx.worker.SummaryWorker
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -20,11 +23,11 @@ class SummaryRepository @Inject constructor(
     private val workManager: WorkManager
 ) {
 
-    fun observeSummary(meetingId: String): Flow<SummaryEntity?> =
-        summaryDao.observeSummary(meetingId)
+    fun observeSummary(meetingId: String): Flow<Summary?> =
+        summaryDao.observeSummary(meetingId).map { it?.toDomain() }
 
-    suspend fun getSummary(meetingId: String): SummaryEntity? =
-        summaryDao.getSummary(meetingId)
+    suspend fun getSummary(meetingId: String): Summary? =
+        summaryDao.getSummary(meetingId)?.toDomain()
 
     suspend fun enqueueSummaryGeneration(meetingId: String) {
         val now = System.currentTimeMillis()

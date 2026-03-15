@@ -6,8 +6,8 @@ import com.twinmindx.data.db.entity.AudioChunkEntity
 import com.twinmindx.data.db.entity.ChunkStatus
 import com.twinmindx.data.db.entity.MeetingEntity
 import com.twinmindx.data.db.entity.MeetingStatus
-import com.twinmindx.domain.model.Meeting
-import com.twinmindx.domain.model.toDomain
+import com.twinmindx.domain.models.Meeting
+import com.twinmindx.domain.models.toDomain
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import java.text.SimpleDateFormat

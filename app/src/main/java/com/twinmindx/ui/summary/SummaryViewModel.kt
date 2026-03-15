@@ -3,15 +3,14 @@ package com.twinmindx.ui.summary
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.twinmindx.data.db.entity.SummaryEntity
 import com.twinmindx.data.db.entity.SummaryStatus
+import com.twinmindx.domain.models.Summary
 import com.twinmindx.data.repository.SummaryRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import org.json.JSONArray
 import javax.inject.Inject
 
 @HiltViewModel
@@ -22,7 +21,7 @@ class SummaryViewModel @Inject constructor(
 
     val meetingId: String = checkNotNull(savedStateHandle["meetingId"])
 
-    val summary: StateFlow<SummaryEntity?> = summaryRepository.observeSummary(meetingId)
+    val summary: StateFlow<Summary?> = summaryRepository.observeSummary(meetingId)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
     init {
@@ -40,16 +39,6 @@ class SummaryViewModel @Inject constructor(
     fun retry() {
         viewModelScope.launch {
             summaryRepository.retrySummaryGeneration(meetingId)
-        }
-    }
-    
-    fun parseJsonList(json: String?): List<String> {
-        if (json.isNullOrBlank()) return emptyList()
-        return try {
-            val array = JSONArray(json)
-            (0 until array.length()).map { array.getString(it) }
-        } catch (_: Exception) {
-            emptyList()
         }
     }
 }

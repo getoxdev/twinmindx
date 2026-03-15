@@ -1,4 +1,4 @@
-package com.twinmindx.domain.model
+package com.twinmindx.domain.models
 
 import com.twinmindx.data.db.entity.MeetingEntity
 import com.twinmindx.data.db.entity.MeetingStatus
